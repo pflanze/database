@@ -1,0 +1,2 @@
+
+(defrecord Database [path])
