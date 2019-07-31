@@ -2,12 +2,15 @@
  ^{:author "London dojo group"
    :doc "Lowlevel storage"}
  database.store
- (:require [database.database :as database]))
+ (:require [multihash]))
 
 
-(defn store [db obj]
+(defrecord Store [path])
+
+
+(defn store [st obj]
   (let [s (with-out-str (clojure.pprint/write obj))]
     '(let [hash ()])))
 
-(defn retrieve [db hash]
+(defn retrieve [st hash]
   'obj)

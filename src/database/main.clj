@@ -2,8 +2,8 @@
  ^{:author "London dojo group"
    :doc "Main"}
  database.main
- (:require [database.database :as database]))
+ (:require [database.store :as store]))
 
 
-(def db (database/Database. ".tmp"))
+(def st (store/Store. ".tmp"))
 
