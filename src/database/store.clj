@@ -2,7 +2,9 @@
  ^{:author "London dojo group"
    :doc "Lowlevel storage"}
  database.store
- (:require [multihash]))
+ ;; (:require [multihash.core])
+ (:require [clojure.pprint])
+ )
 
 
 (defrecord Store [path])
