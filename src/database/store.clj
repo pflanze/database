@@ -3,7 +3,6 @@
    :doc "Lowlevel storage"}
  database.store
  ;; (:require [multihash.core])
- (:require [clojure.pprint])
  )
 
 
@@ -11,7 +10,7 @@
 
 
 (defn store [st obj]
-  (let [s (with-out-str (clojure.pprint/write obj))]
+  (let [s (pr-str obj)]
     '(let [hash ()])))
 
 (defn retrieve [st hash]
