@@ -1,17 +1,26 @@
-(ns
- ^{:author "London dojo group"
-   :doc "Lowlevel storage"}
- database.store
- ;; (:require [multihash.core])
- )
 
 
-(defrecord Store [path])
+
+(defn make-Store [path]
+  {:type 'Store :path path})
+
+(defn make-Reference [hash]
+  {:type 'Reference :hash hash})
 
 
-(defn store [st obj]
-  (let [s (pr-str obj)]
-    '(let [hash ()])))
+(def the-store (make-Store "db/"))
 
-(defn retrieve [st hash]
-  'obj)
+
+(defn store [obj]
+  (let [s (pr-str obj)
+          hash (str (hash s))
+          path (str (:path the-store) "/" hash)]
+    (spit path s)
+    (make-Reference hash)))
+
+
+(defn dereference [ref]
+  (let [path (str (:path the-store) "/" (:hash ref))]
+    ;; XXX security
+    (-> (slurp path)
+        (read-string))))
