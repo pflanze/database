@@ -1,5 +1,6 @@
 (ns database.store
-    (:require [clojure.core.match :refer [match]]))
+    (:require [clojure.core.match :refer [match]])
+    (:require [taoensso.nippy :as nippy]))
 
 
 (import 'java.security.MessageDigest

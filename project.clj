@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [mvxcvi/multihash "2.0.3"]
                  [org.clojure/core.match "0.3.0"]
-                 [org.edn-format/data.edn "0.1.0"]]
+                 [com.taoensso/nippy "2.14.0"]]
   ;; :dev-dependencies [[swank-clojure "1.3.0-SNAPSHOT"]]
   :main database.store
   ;;:repl-options {:init-ns database.main}
