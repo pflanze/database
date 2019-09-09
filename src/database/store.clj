@@ -1,6 +1,7 @@
 (ns database.store
     (:require [clojure.core.match :refer [match]])
-    (:require [taoensso.nippy :as nippy]))
+    (:require [cognitect.transit :as transit])
+    (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 
 (import 'java.security.MessageDigest
@@ -22,8 +23,23 @@
                   raw (.digest algorithm (.getBytes s))]
     (format "%032x" (BigInteger. 1 raw))))
 
+(defn serialize [obj]
+  (def out (ByteArrayOutputStream. 4096))
+  (def writer (transit/writer out :json))
+  (transit/write writer obj)
+  (.toString out))
+
+(defn deserialize [str]
+  ;; InputStream stream =
+  ;;  new ByteArrayInputStream(exampleString.getBytes(StandardCharsets.UTF_8));
+  (def in (ByteArrayInputStream. (.getBytes str)))
+  (def reader (transit/reader in :json))
+  (transit/read reader))
+
+
+
 (defn store [obj]
-  (let [s (pr-str obj)
+  (let [s (serialize obj)
           hash (our-hash s)
           path (str (:path the-store) "/" hash)]
     (spit path s)
@@ -32,9 +48,10 @@
 
 (defn dereference [ref]
   (let [path (str (:path the-store) "/" (:hash ref))]
-    ;; XXX security
     (-> (slurp path)
-        (read-string))))
+        (deserialize))))
+
+
 
 
 ;; License
