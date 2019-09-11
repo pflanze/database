@@ -7,7 +7,7 @@
                  [mvxcvi/multihash "2.0.3"]
                  [org.clojure/core.match "0.3.0"]]
   ;; :dev-dependencies [[swank-clojure "1.3.0-SNAPSHOT"]]
-  :main database.main
+  :main database.store
   ;;:repl-options {:init-ns database.main}
   ;;:repl-options {}
   
