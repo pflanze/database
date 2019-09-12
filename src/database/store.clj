@@ -11,29 +11,6 @@
 
 ;; lib
 
-(def make-p-prefix "***")
-
-(defn make-p [formatter-name formatter]
-  (fn ([obj]
-       (print make-p-prefix)
-       (print formatter-name)
-       (print ": ")
-       (prn (formatter obj))
-       obj)
-
-      ([msg obj]
-       (print make-p-prefix)
-       (print " ")
-       (print msg)
-       (print formatter-name)
-       (print ": ")
-       (prn (formatter obj))
-       obj)))
-
-(def p (make-p "" identity))
-(def pseq (make-p " (pseq)" seq))
-
-
 (defn spit-bytes [path bytes]
   "Same as spit but write a ByteArray instead of a String"
   (with-open [out (FileOutputStream. path)]
