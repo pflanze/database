@@ -25,12 +25,11 @@
 
 
 
+(def hash-algorithm
+     (MessageDigest/getInstance "SHA-256"))
+
 (defn our-hash [bytes]
-  (let [algorithm
-        (MessageDigest/getInstance "SHA-256")
-        raw
-        (.digest algorithm bytes)]
-    raw))
+  (.digest hash-algorithm bytes))
 
 (defn hash->hex [bytes]
   (format "%032x" (BigInteger. 1 bytes)))
