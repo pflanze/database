@@ -1,16 +1,14 @@
 (ns database.store
     (:require [clojure.core.match :refer [match]])
-    (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
+    (:import [java.io ByteArrayInputStream
+                      ByteArrayOutputStream
+                      ObjectOutputStream
+                      ObjectInputStream
+                      FileOutputStream
+                      FileInputStream]
+             [java.security MessageDigest]
+             [java.math BigInteger]))
 
-
-(import 'java.security.MessageDigest
-        'java.math.BigInteger
-        'java.io.ObjectOutputStream
-        'java.io.ObjectInputStream
-        'java.io.FileOutputStream
-        'java.io.FileInputStream
-        'java.nio.file.Files
-        'java.nio.file.Paths)
 
 ;; lib
 
