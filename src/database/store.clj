@@ -1,4 +1,6 @@
 (ns database.store
+    ;;(:require [clojure.core :exclude [get]]) nope,
+    (:refer-clojure :exclude [get])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream
@@ -64,7 +66,7 @@
              (deserialize-stream in)))
 
 
-(defn store [obj]
+(defn put [obj]
   (let [bytes
         (serialize obj)
         hash
@@ -74,7 +76,7 @@
     (spit-bytes path bytes)
     (Reference. hash)))
 
-(defn dereference [ref]
+(defn get [ref]
   (-> (reference-path ref)
       (deserialize-file)))
 
