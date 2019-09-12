@@ -1,11 +1,17 @@
 (ns database.store
     (:require [clojure.core.match :refer [match]])
-    (:require [cognitect.transit :as transit])
     (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 
 (import 'java.security.MessageDigest
-        'java.math.BigInteger)
+        'java.math.BigInteger
+        'java.io.ObjectOutputStream
+        'java.io.ObjectInputStream
+        'java.io.FileOutputStream
+        'java.io.FileInputStream
+        'java.io.DataInputStream
+        'java.nio.file.Files
+        'java.nio.file.Paths)
 
 ;; lib
 
@@ -31,6 +37,25 @@
 (def p (make-p "" identity))
 (def pseq (make-p " (pseq)" seq))
 
+
+(defn spit-bytes [path bytes]
+  "Same as spit but write a ByteArray instead of a String"
+  (with-open [out (FileOutputStream. path)]
+             (.write out bytes)))
+
+;; (defn slurp-bytes [path]
+;;   "Same as slurp but return a ByteArray instead of a String"
+;;   ;; https://stackoverflow.com/questions/1264709/convert-inputstream-to-byte-array-in-java
+;;   (let [bytes
+;;         (byte-array 4096)
+;;         in
+;;         (FileInputStream. path)
+;;         dis
+;;         (DataInputStream. in)]
+;;     (try (.readFully dis bytes)
+;;          bytes
+;;          (catch java.io.EOFException e e))))
+
 ;; /lib
 
 
@@ -44,38 +69,49 @@
 
 (def the-store (make-Store "db/"))
 
-(defn our-hash [^String s]
-  (let [algorithm (MessageDigest/getInstance "SHA-256")
-                  raw (.digest algorithm (.getBytes s))]
+(defn our-hash [bytes]
+  (let [algorithm
+        (MessageDigest/getInstance "SHA-256")
+        raw
+        (.digest algorithm bytes)]
     (format "%032x" (BigInteger. 1 raw))))
 
 (defn serialize [obj]
-  (def out (ByteArrayOutputStream. 4096))
-  (def writer (transit/writer out :json))
-  (transit/write writer obj)
-  (.toString out))
+  (let [out
+        (ByteArrayOutputStream. 4096)
+        writer
+        (ObjectOutputStream. out)]
+    (.writeObject writer obj)
+    (.close writer)
+    (.close out)
+    (.toByteArray out)))
 
-(defn deserialize [str]
-  ;; InputStream stream =
-  ;;  new ByteArrayInputStream(exampleString.getBytes(StandardCharsets.UTF_8));
-  (def in (ByteArrayInputStream. (.getBytes str)))
-  (def reader (transit/reader in :json))
-  (transit/read reader))
+(defn deserialize-stream [in]
+  (let [reader
+        (ObjectInputStream. in)]
+    (.readObject reader)))
 
+(defn deserialize [bytes]
+  (deserialize-stream (ByteArrayInputStream. bytes)))
+
+(defn deserialize-file [path]
+  (with-open [in (FileInputStream. path)]
+             (deserialize-stream in)))
 
 
 (defn store [obj]
-  (let [s (serialize obj)
-          hash (our-hash s)
-          path (str (:path the-store) "/" hash)]
-    (spit path s)
+  (let [bytes
+        (serialize obj)
+        hash
+        (our-hash bytes)
+        path
+        (str (:path the-store) "/" hash)]
+    (spit-bytes path bytes)
     (make-Reference hash)))
 
-
 (defn dereference [ref]
-  (let [path (str (:path the-store) "/" (:hash ref))]
-    (-> (slurp path)
-        (deserialize))))
+  (-> (str (:path the-store) "/" (:hash ref))
+      (deserialize-file)))
 
 
 
