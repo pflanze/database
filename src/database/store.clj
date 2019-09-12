@@ -9,7 +9,6 @@
         'java.io.ObjectInputStream
         'java.io.FileOutputStream
         'java.io.FileInputStream
-        'java.io.DataInputStream
         'java.nio.file.Files
         'java.nio.file.Paths)
 
@@ -42,19 +41,6 @@
   "Same as spit but write a ByteArray instead of a String"
   (with-open [out (FileOutputStream. path)]
              (.write out bytes)))
-
-;; (defn slurp-bytes [path]
-;;   "Same as slurp but return a ByteArray instead of a String"
-;;   ;; https://stackoverflow.com/questions/1264709/convert-inputstream-to-byte-array-in-java
-;;   (let [bytes
-;;         (byte-array 4096)
-;;         in
-;;         (FileInputStream. path)
-;;         dis
-;;         (DataInputStream. in)]
-;;     (try (.readFully dis bytes)
-;;          bytes
-;;          (catch java.io.EOFException e e))))
 
 ;; /lib
 
