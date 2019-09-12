@@ -47,17 +47,26 @@
 
 (defrecord Store [path])
 
-(defrecord Reference [hash])
-
-
 (def the-store (Store. "db/"))
+
+
 
 (defn our-hash [bytes]
   (let [algorithm
         (MessageDigest/getInstance "SHA-256")
         raw
         (.digest algorithm bytes)]
-    (format "%032x" (BigInteger. 1 raw))))
+    raw))
+
+(defn hash->hex [bytes]
+  (format "%032x" (BigInteger. 1 bytes)))
+
+
+(defrecord Reference [hash])
+
+(defn reference-path [ref]
+  (str (:path the-store) "/" (hash->hex (:hash ref))))
+
 
 (defn serialize [obj]
   (let [out
@@ -88,12 +97,12 @@
         hash
         (our-hash bytes)
         path
-        (str (:path the-store) "/" hash)]
+        (str (:path the-store) "/" (hash->hex hash))]
     (spit-bytes path bytes)
     (Reference. hash)))
 
 (defn dereference [ref]
-  (-> (str (:path the-store) "/" (:hash ref))
+  (-> (reference-path ref)
       (deserialize-file)))
 
 
