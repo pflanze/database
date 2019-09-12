@@ -1,4 +1,3 @@
-- path calculation from hash is in there twice, still, unify
 - does with-open really close the streams?
 - do exceptions happen when errors happen writing?
 - test suite (including emulated OS errors)

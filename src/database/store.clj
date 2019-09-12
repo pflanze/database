@@ -39,8 +39,13 @@
 
 (defrecord Reference [hash])
 
+
+(defn hash-path [hash]
+  (str (:path the-store) "/" (hash->hex hash)))
+
 (defn reference-path [ref]
-  (str (:path the-store) "/" (hash->hex (:hash ref))))
+  (hash-path (:hash ref)))
+
 
 
 (defn serialize [obj]
@@ -72,7 +77,7 @@
         hash
         (our-hash bytes)
         path
-        (str (:path the-store) "/" (hash->hex hash))]
+        (hash-path hash)]
     (spit-bytes path bytes)
     (Reference. hash)))
 
