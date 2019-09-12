@@ -45,15 +45,12 @@
 ;; /lib
 
 
+(defrecord Store [path])
 
-(defn make-Store [path]
-  {:type 'Store :path path})
-
-(defn make-Reference [hash]
-  {:type 'Reference :hash hash})
+(defrecord Reference [hash])
 
 
-(def the-store (make-Store "db/"))
+(def the-store (Store. "db/"))
 
 (defn our-hash [bytes]
   (let [algorithm
@@ -93,7 +90,7 @@
         path
         (str (:path the-store) "/" hash)]
     (spit-bytes path bytes)
-    (make-Reference hash)))
+    (Reference. hash)))
 
 (defn dereference [ref]
   (-> (str (:path the-store) "/" (:hash ref))
