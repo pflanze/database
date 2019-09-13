@@ -28,31 +28,32 @@
 
 
 
-(def hash-algorithm
-     (MessageDigest/getInstance "SHA-256"))
-
-(defn our-hash [str]
-  (.digest hash-algorithm (.getBytes str)))
-
 (defn chop [s]
   (.substring s 0 (dec (.length s))))
 
-(defn hash->string [bytes]
+(defn rawhash->string [bytes]
   (-> (.encodeToString (Base64/getEncoder) bytes)
       (.replace \/ \_)
       (chop)))
 
-(defn string->hash [s]
-  (.decode (Base64/getDecoder) (-> s
-                                   (.replace \_ \/)
-                                   (str \=))))
+;; (defn string->rawhash [s]
+;;   (.decode (Base64/getDecoder) (-> s
+;;                                    (.replace \_ \/)
+;;                                    (str \=))))
+
+
+(def hash-algorithm
+     (MessageDigest/getInstance "SHA-256"))
+
+(defn our-hash [str]
+  (rawhash->string (.digest hash-algorithm (.getBytes str))))
 
 
 (defrecord Reference [hash])
 
 
 (defn hash-path [hash]
-  (str (:path the-store) "/" (hash->string hash)))
+  (str (:path the-store) "/" hash))
 
 (defn reference-path [ref]
   (hash-path (:hash ref)))
@@ -60,7 +61,7 @@
 ;; Constructor for serialisation
 
 (defn reference [str]
-  (Reference. (string->hash str)))
+  (Reference. str))
 
 
 (defn error
@@ -110,7 +111,7 @@
                         'reference
                         reference
                         (fn [v]
-                            (list 'reference (hash->string (:hash v)))))
+                            (list 'reference (:hash v))))
       (TypeTransformer. clojure.lang.PersistentVector
                         'vector
                         vector
