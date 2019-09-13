@@ -2,7 +2,8 @@
     ;;(:require [clojure.core :exclude [get]]) nope,
     (:refer-clojure :exclude [get])
     (:require [chj.debug :refer [p pseq]])
-    (:require [chj.util :refer [class-predicate-for]])
+    (:require [chj.util :refer [class-predicate-for
+                                error]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream
@@ -54,11 +55,6 @@
 
 (defn reference [str]
   (Reference. str))
-
-
-(defn error
-  ([msg val]
-   (throw (new Exception (str msg ": " val)))))
 
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
