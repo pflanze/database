@@ -12,16 +12,6 @@
              [java.util Base64]))
 
 
-;; lib
-
-(defn spit-bytes [path bytes]
-  "Same as spit but write a ByteArray instead of a String"
-  (with-open [out (FileOutputStream. path)]
-             (.write out bytes)))
-
-;; /lib
-
-
 (defrecord Store [path])
 
 (def the-store (Store. "db"))
