@@ -1,5 +1,6 @@
 - does with-open really close the streams?
 - do exceptions happen when errors happen writing?
+- fsck feature
 - test suite (including emulated OS errors)
 - store should have a cache, and a context that's passed around how?
   - optimize saving of objects by checking the cache, and then possibly stat the path (orwrite with EEXCL)
