@@ -11,3 +11,11 @@
    (throw (new Exception (str msg ": " val)))))
 
 
+(defmacro ->* [& forms]
+  `(fn [v#]
+       (-> v# ~@forms)))
+
+(defmacro ->>* [& forms]
+  `(fn [v#]
+       (->> v# ~@forms)))
+

@@ -3,7 +3,8 @@
     (:refer-clojure :exclude [get])
     (:require [chj.debug :refer [p pseq]])
     (:require [chj.util :refer [class-predicate-for
-                                error]])
+                                error
+                                ->* ->>*]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream
@@ -160,11 +161,14 @@
         true
         e))
 
-(defn deserialize-stream [in]
-  (deserialize:eval (read (java.io.PushbackReader. (java.io.InputStreamReader. in)))))
+(def deserialize-stream
+     (->* java.io.InputStreamReader.
+          java.io.PushbackReader.
+          read
+          deserialize:eval))
 
-(defn deserialize [str]
-  (deserialize-stream (ByteArrayInputStream. (.getBytes str))))
+(def deserialize-string
+     (->* .getBytes ByteArrayInputStream. deserialize-stream))
 
 (defn deserialize-file [path]
   (with-open [in (FileInputStream. path)]
