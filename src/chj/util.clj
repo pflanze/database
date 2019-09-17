@@ -19,3 +19,17 @@
   `(fn [v#]
        (->> v# ~@forms)))
 
+
+(defn for-each [proc coll]
+  (loop [s (seq coll)]
+        (when s
+              (proc (first s))
+              (recur (next s)))))
+
+;; (for-each pr [3 4 5])
+;; is the same as
+;; (doseq [v [3 4 5]] (pr v))
+
+
+(defn hash-map-map [fn hashmap]
+  (into {} (map fn hashmap)))
