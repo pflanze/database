@@ -1,6 +1,8 @@
 (ns database.store
     ;;(:require [clojure.core :exclude [get]]) nope,
     (:refer-clojure :exclude [get])
+    (:require [chj.debug :refer [p pseq]])
+    (:require [chj.util :refer [class-predicate-for]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream
@@ -60,6 +62,8 @@
 
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
+
+(def TypeTransformer? (class-predicate-for TypeTransformer))
 
 (defn identityTransformer [typ]
   (TypeTransformer. typ
@@ -127,10 +131,22 @@
                   '()
                   type-transformers))))
 
-(def type->to-code
-     (index type-transformers :type :to-code))
-(def constructorname->constructor
-     (index type-transformers :constructorname :constructor))
+(def type->to-code)
+(def constructorname->constructor)
+
+(defn index-transformers! []
+  (def type->to-code
+       (index type-transformers :type :to-code))
+  (def constructorname->constructor
+       (index type-transformers :constructorname :constructor)))
+
+(index-transformers!)
+
+(defn add-transformer! [^TypeTransformer t]
+  (assert (TypeTransformer? t))
+  (def type-transformers (conj type-transformers t))
+  (index-transformers!))
+
 
 
 (defn serialize:to-code [obj]
