@@ -62,7 +62,11 @@
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
 
+(defn type-transformer [type constructorname constructor to-code]
+  (TypeTransformer. type constructorname constructor to-code))
+
 (def TypeTransformer? (class-predicate-for TypeTransformer))
+
 
 (def type-transformers (atom (entries->table [])))
 
@@ -77,7 +81,7 @@
 
 
 (defn identityTransformer [typ]
-  (TypeTransformer. typ
+  (type-transformer typ
                     false
                     false
                     identity))
@@ -88,7 +92,7 @@
   (error "serialization of this type is not supported" (type v)))
 
 (add-transformers!
- (TypeTransformer. clojure.lang.LongRange
+ (type-transformer clojure.lang.LongRange
                    false  ;; 'range
                    false  ;; range
                    ;; (fn [v]
@@ -98,26 +102,26 @@
                    ;;           (.end v)
                    ;;           (.step v)))
                    serialization-not-supported)
- (TypeTransformer. clojure.lang.LazySeq
+ (type-transformer clojure.lang.LazySeq
                    false ;; 'LazySeq
                    false
                    serialization-not-supported)
- (TypeTransformer. clojure.lang.PersistentList
+ (type-transformer clojure.lang.PersistentList
                    'list
                    list
                    (fn [v]
                        (cons 'list (map serialize:to-code v))))
- (TypeTransformer. clojure.lang.Symbol
+ (type-transformer clojure.lang.Symbol
                    'symbol
                    symbol
                    (fn [v]
                        (list 'symbol (str v))))
- (TypeTransformer. database.store.Reference
+ (type-transformer database.store.Reference
                    'reference
                    reference
                    (fn [v]
                        (list 'reference (:hash v))))
- (TypeTransformer. clojure.lang.PersistentVector
+ (type-transformer clojure.lang.PersistentVector
                    'vector
                    vector
                    (fn [v]
