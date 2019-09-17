@@ -1,5 +1,22 @@
 (ns database.tree
-    (:require [clojure.core.match :refer [match]]))
+    (:require [clojure.core.match :refer [match]]
+              [database.store :as s]))
+
+
+(defrecord Pair [car cdr])
+
+(defn pair [a r]
+     (Pair. a r))
+
+(s/add-transformer!
+ (s/type-transformer database.tree.Pair 'pair pair
+                     (fn [v]
+                         (list 'pair
+                               (s/type-transformer:to-code (:car v))
+                               (s/type-transformer:to-code (:cdr v))))))
+
+;; (is (-> (Pair. 10 (Pair. 20 30)) s/put s/get)
+;;     (Pair. 10 (Pair. 20 30)))
 
 
 ;; License
