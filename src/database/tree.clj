@@ -38,7 +38,7 @@
                [:black c z d]]
          :else tree))
 
-(defn rb:assoc [tree k v]
+(defn rb:conjoin [tree k v]
   (let [ins
         (fn ins [tree]
             (match tree
@@ -51,13 +51,30 @@
         [_ a y b] (ins tree)]
     [:black a y b]))
 
-(defn rb:contains? [tree k]
+(defn rb:contains?
+  "Check if the key is present"
+  [tree k]
   (match tree
          nil false
          [_ a kv b] (cond
-                     (< k (key kv)) (recur a k)
-                     (> k (key kv)) (recur b k)
-                     :else true)))
+                      (< k (key kv)) (recur a k)
+                      (> k (key kv)) (recur b k)
+                      :else true)))
+
+(defn rb:ref
+  "Check if the key is present and return value or a default"
+  ([tree k not-found]
+   (loop [tree tree
+          k k]
+     (match tree
+            nil not-found
+            [_ a kv b] (cond
+                         (< k (key kv)) (recur a k)
+                         (> k (key kv)) (recur b k)
+                         :else (val kv)))))
+  ([tree k]
+   (rb:ref tree k nil)))
+
 
 (defn rb:vals [tree]
   (match tree
