@@ -1,11 +1,12 @@
 (ns test.database.store
     (:require [database.store :as db])
-    (:require [clojure.test :refer [is]]))
+    (:require [chj.test :refer [is*]]))
 
+(is*
 
-(is (->> (symbol "a b") db/put db/get type)
+ (= (->> (symbol "a b") db/put db/get type)
     clojure.lang.Symbol)
 
-(is (->> (symbol "a b") db/put db/get)
-    (symbol "a b"))
+ (= (->> (symbol "a b") db/put db/get)
+    (symbol "a b")))
 
