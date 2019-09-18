@@ -5,7 +5,8 @@
 
 ;; License
 
-;; Copyright © 2016 Henry Garner
+;; Copyright © 2016 Henry Garner, 2019 Christian Jaeger & others (see
+;; Git commit history)
 
 ;; Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
