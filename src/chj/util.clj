@@ -33,3 +33,9 @@
 
 (defn hash-map-map [fn hashmap]
   (into {} (map fn hashmap)))
+
+
+(defmacro with-gensym [sym & body]
+  `(let [~sym (gensym '~sym)]
+     ~@body))
+
