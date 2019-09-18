@@ -38,7 +38,8 @@
                [:black c z d]]
          :else tree))
 
-(defn rb:conjoin [tree k v]
+
+(defn rb:add [tree k v]
   (let [ins
         (fn ins [tree]
             (match tree
@@ -51,6 +52,10 @@
         [_ a y b] (ins tree)]
     [:black a y b]))
 
+(defn rb:conj [tree [k v]]
+  (rb:add tree k v))
+
+
 (defn rb:contains?
   "Check if the key is present"
   [tree k]
@@ -60,6 +65,7 @@
                       (< k (key kv)) (recur a k)
                       (> k (key kv)) (recur b k)
                       :else true)))
+
 
 (defn rb:ref
   "Check if the key is present and return value or a default"
