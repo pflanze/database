@@ -10,6 +10,6 @@
   :main database.tree
   ;;:repl-options {:init-ns database.main}
   ;;:repl-options {}
-  :test-paths ["test"]
+  :test-paths [""]
   )
 
