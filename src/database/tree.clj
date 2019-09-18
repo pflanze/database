@@ -1,16 +1,6 @@
 (ns database.tree
     (:require [clojure.core.match :refer [match]]
-              [database.store :as s])
-    (:require [database.dbrecord :refer [defdbrecord]]))
-
-
-(defdbrecord pair [car cdr])
-
-;; (= (-> (Pair. 10 (Pair. 20 30)) s/put s/get)
-;;    (Pair. 10 (Pair. 20 30)))
-
-;; (= (-> (pair 10 (pair 20 30)) s/put s/get)
-;;    (pair 10 (pair 20 30)))
+              [database.store :as s]))
 
 
 ;; License
