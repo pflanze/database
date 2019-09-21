@@ -2,6 +2,7 @@
     (:require [chj.debug :refer [p pseq]]
               [chj.util :refer [error hash-map-map]]))
 
+
 (defn index
   ([entries key]
    (index entries key identity))
@@ -13,7 +14,6 @@
                                   res)))
                   '()
                   entries))))
-
 
 
 ;; entries: a collection of 'rows'
@@ -48,4 +48,11 @@
 
 (defn table-ref [t key-name key-val]
   ((table-index-for t key-name) key-val))
+
+
+(defn table-indices [t]
+  @(:indices t))
+
+(defn table-indices-keyset [t]
+  (set (keys @(:indices t))))
 
