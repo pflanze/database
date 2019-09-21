@@ -17,12 +17,10 @@
    ;; ^ on second access, use cached table; need hooks for that.
 
 
-   ;; Wow table-ref returns a special nil, so can't check for is
-   ;; nil. Need to convert to a boolean...
-   (= (not (table-ref t second "four"))
-      true)
-   ;; (= (not (table-ref t second "four"))
-   ;;    true)
+   (= (table-ref t second "four")
+      nil)
+   ;; (= (table-ref t second "four")
+   ;;    nil)
    ;; ditto
 
 
