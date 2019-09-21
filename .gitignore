@@ -3,3 +3,4 @@
 /.lein-repl-history
 /.nrepl-port
 /db/
+/.lein-failures
