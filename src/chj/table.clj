@@ -1,6 +1,6 @@
 (ns chj.table
-    (:require [chj.debug :refer [p pseq]])
-    (:require [chj.util :refer [error hash-map-map]]))
+    (:require [chj.debug :refer [p pseq]]
+              [chj.util :refer [error hash-map-map]]))
 
 (defn index
   ([entries key]

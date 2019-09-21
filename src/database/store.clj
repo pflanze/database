@@ -1,12 +1,12 @@
 (ns database.store
     ;;(:require [clojure.core :exclude [get]]) nope,
     (:refer-clojure :exclude [get])
-    (:require [chj.debug :refer [p pseq]])
-    (:require [chj.util :refer [class-predicate-for
+    (:require [chj.debug :refer [p pseq]]
+              [chj.util :refer [class-predicate-for
                                 for-each
                                 error
-                                ->* ->>*]])
-    (:require [chj.table :refer [entries->table table-add table-ref]])
+                                ->* ->>*]]
+              [chj.table :refer [entries->table table-add table-ref]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream

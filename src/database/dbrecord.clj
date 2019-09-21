@@ -1,8 +1,8 @@
 (ns database.dbrecord
-    (:require [chj.debug :refer [p pseq]])
-    (:require [database.store :as s])
-    (:require [clojure.string :as str])
-    (:require [chj.util :refer [with-gensym]]))
+    (:require [chj.debug :refer [p pseq]]
+              [database.store :as s]
+              [clojure.string :as str]
+              [chj.util :refer [with-gensym]]))
 
 
 ;; Easily define record data types to be stored in the database
