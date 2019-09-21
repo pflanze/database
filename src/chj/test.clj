@@ -7,3 +7,7 @@
                   `(is ~form))
               forms)))
 
+
+(defmacro is= [a b]
+  `(is (= ~a ~b)))
+
