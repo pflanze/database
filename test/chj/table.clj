@@ -71,14 +71,14 @@
   (is (= (table-indices-keyset t)
          #{first second}))
   (is (not (= (table-indices t)
-              (table-indices t2)))))
+              (table-indices t2))))
 
 
-(deftest more-table-add?
   (def t3 (table-add t2 [5 "five"]))
 
   (is= (table-ref t3 first 1)
        [1 "one"])
   (is= (table-ref t3 first 5)
        [5 "five"]))
+
 
