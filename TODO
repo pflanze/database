@@ -1,9 +1,14 @@
-- does with-open really close the streams?
-- do exceptions happen when errors happen writing?
-- fsck feature
-- test suite (including emulated OS errors)
+- does `with-open` really close the streams?
+- do exceptions happen when errors happen while writing?
+- add tests with emulated OS errors
+- fsck feature (recursively resolve all references in a given object/reference and verify that the hash sums match the file contents)
 - store should have a cache, and a context that's passed around how?
-  - optimize saving of objects by checking the cache, and then possibly stat the path (orwrite with EEXCL)
-- make dereference etc. methods (Java style for speed?)? Is there a `force` or something?
-- finish tree implementation
+  - optimize saving of objects by checking the cache, and then possibly stat the path (or open files with EEXCL)
+  - or/and keep a (weak) ref to the object in the `reference` object
+- make tree implementation work with all serializeable data types as keys
+- add more features to tree implementation (min, max, perhaps merge, etc.)
+- change tree implementation to be just a collection, and then build both map and set on top of it
+- could the latter be plugged into `conj`, `(:key t)`, etc.?
+- store: implement mutable cells (both named, and anonymous (atoms))
+- adapt chj.table to be storable (database tables)
 - etc.
