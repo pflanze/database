@@ -62,6 +62,13 @@
 (def reference? (class-predicate-for Reference))
 
 
+(defn map-entry [k v]
+  (clojure.lang.MapEntry. k v))
+
+;; map-entry? is in clojure.core
+
+
+
 (defrecord TypeTransformer [type constructorname constructor to-code])
 
 (defn type-transformer [type constructorname constructor to-code]
@@ -123,6 +130,11 @@
                    keyword
                    (fn [v]
                        (list 'keyword (str v))))
+ (type-transformer clojure.lang.MapEntry
+                   'map-entry
+                   map-entry
+                   (fn [v]
+                       (list 'map-entry (key v) (val v))))
  (type-transformer database.store.Reference
                    'reference
                    reference
