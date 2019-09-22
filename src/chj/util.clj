@@ -39,3 +39,7 @@
   `(let [~sym (gensym '~sym)]
      ~@body))
 
+
+(def keyword->string
+     (->* str (subs 1)))
+
