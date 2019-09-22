@@ -59,6 +59,8 @@
 (defn reference [str]
   (Reference. str))
 
+(def reference? (class-predicate-for Reference))
+
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
 
