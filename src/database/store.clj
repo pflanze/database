@@ -5,7 +5,8 @@
               [chj.util :refer [class-predicate-for
                                 for-each
                                 error
-                                ->* ->>*]]
+                                ->* ->>*
+                                keyword->string]]
               [chj.table :refer [entries->table table-add table-ref]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
@@ -129,7 +130,7 @@
                    'keyword
                    keyword
                    (fn [v]
-                       (list 'keyword (str v))))
+                       (list 'keyword (keyword->string v))))
  (type-transformer clojure.lang.MapEntry
                    'map-entry
                    map-entry
