@@ -118,6 +118,11 @@
                    symbol
                    (fn [v]
                        (list 'symbol (str v))))
+ (type-transformer clojure.lang.Keyword
+                   'keyword
+                   keyword
+                   (fn [v]
+                       (list 'keyword (str v))))
  (type-transformer database.store.Reference
                    'reference
                    reference
