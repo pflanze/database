@@ -28,3 +28,17 @@
        '("ten" "twenty")))
 
 
+(deftest t-seq->rb
+
+  (def s [[10 "ten"] [20 "twenty"]])
+
+  (def t1 (seq->rb s))
+  (def t2 (seq->rb (reverse s)))
+  
+  (is*
+   (= t1
+      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil]])
+   (= t2
+      [:black [:red nil [10 "ten"] nil] [20 "twenty"] nil])))
+
+

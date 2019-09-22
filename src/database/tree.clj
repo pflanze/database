@@ -1,6 +1,7 @@
 (ns database.tree
     (:require [clojure.core.match :refer [match]]
-              [database.store :as s]))
+              [database.store :as s]
+              [chj.util :refer [flip]]))
 
 
 ;; License
@@ -39,6 +40,10 @@
 
 (defn rb:conj [tree [k v]]
   (rb:add tree k v))
+
+
+(defn seq->rb [s]
+  (reduce rb:conj nil s))
 
 
 (defn rb:contains?
