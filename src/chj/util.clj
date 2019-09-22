@@ -43,3 +43,10 @@
 (def keyword->string
      (->* str (subs 1)))
 
+
+;; also see https://groups.google.com/forum/#!topic/clojure/7gCK7izwXBc
+;;   and look into https://github.com/LonoCloud/synthread
+(defn flip [f]
+  (fn [a b]
+      (f b a)))
+
