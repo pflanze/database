@@ -12,6 +12,15 @@
 ;; Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
 
+(defn rb:depth [tree]
+  "The max depth of the tree, for debugging purposes"
+  (match (GET tree)
+         nil
+         0
+         [color a kv b]
+         (inc (max (rb:depth a)
+                   (rb:depth b)))))
+
 
 (defn rb:balance [tree]
   (match [tree]
