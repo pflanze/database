@@ -42,3 +42,44 @@
       [:black [:red nil [10 "ten"] nil] [20 "twenty"] nil])))
 
 
+(deftest t-depth
+  (is*
+   (= (rb:depth nil)
+      0)
+   (= (rb:depth (rb:add nil 4 "4"))
+      1)
+   (= t
+      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil]])
+   (= (rb:depth t)
+      2)
+   (= t2
+      [:black [:red nil [10 "ten"] nil] [20 "twenty"] nil])
+   (= (rb:depth t2)
+      2)))
+
+
+(defn range-kvs [from to]
+  (map #(vector % (str %))
+       (range from to)))
+
+(deftest skewed
+  (def t3 (seq->rb (range-kvs 10 20)))
+  (is= (rb:depth t3)
+       5)
+
+  (def t4 (rb:into t3 (reverse (range-kvs 40 50))))
+  (is= (rb:depth t4)
+       6)
+
+  (def t5 (rb:into t4 (range-kvs 40 500)))
+  (is= (rb:depth t5)
+       12)
+
+  (def t5b (rb:into t5 (range-kvs 40 500)))
+  (is= (rb:depth t5)
+       12)
+
+  (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
+  (is= t5 t5c)
+
+  )
