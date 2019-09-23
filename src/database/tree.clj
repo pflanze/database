@@ -46,15 +46,49 @@
 
 
 (defn rb:balance [tree]
-  (match (GET tree)
-         (:or [:black [:red [:red a x b] y c] z d]
-              [:black [:red a x [:red b y c]] z d]
-              [:black a x [:red [:red b y c] z d]]
-              [:black a x [:red b y [:red c z d]]])
-         (PUT [:red (PUT [:black a x b])
-                    y
-                    (PUT [:black c z d])])
-         :else tree))
+  (let [cont
+        (fn [a b c d x y z]
+            (PUT [:red (PUT [:black a x b])
+                       y
+                       (PUT [:black c z d])]))]
+    (match (GET tree)
+           [:black N1 z M1]
+           (match (GET N1)
+                  [:red N2 y M2]
+                  (match (GET N2)
+                         ;; [:black [:red [:red a x b] y c] z d]
+                         [:red a x b]
+                         ;;    a b c  d 
+                         (cont a b M2 M1 x y z)
+
+                         :else
+                         (match (GET M2)
+                                [:red b y2 c]
+                                ;; [:black [:red a  x  [:red b y  c]] z d]
+                                ;; tree    N1    N2 y  M2    b y2 c   z M1
+                                ;;    a  b c d  x y  z
+                                (cont N2 b c M1 y y2 z)
+                                :else
+                                tree))
+                  (match (GET M1)
+                         [:red N2 z2 M2]
+                         ;; [:black a  x [:red [:red b y c] z  d]]
+                         ;; tree    N1 z M1    N2           z2 M2
+                         (match (GET N2)
+                                [:red b y c]
+                                ;;    a  b c d  x y z
+                                (cont N1 b c M2 z y z2)
+                                :else
+                                (match (GET M2)
+                                       [:red c z3 d]
+                                       ;; [:black a  x [:red b  y  [:red c z  d]]]
+                                       ;; tree    N1 z M1    N2 z2 M2    c z2 d
+                                       (cont N1 N2 c d z z2 z3)
+                                       :else
+                                       tree))
+                         :else
+                         tree))
+           :else tree)))
 
 
 (defn rb:add [tree k v]
