@@ -81,6 +81,7 @@
                                 (cont N2 b c M1 y y2 z)
                                 :else
                                 tree))
+                  :else
                   (match (GET M1)
                          [:red N2 z2 M2]
                          ;; [:black a  x [:red [:red b y c] z  d]]
