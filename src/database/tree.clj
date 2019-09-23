@@ -108,15 +108,21 @@
 (defn rb:add [tree k v]
   (let [ins
         (fn ins [tree]
-            (match (GET tree)
-                   nil [:red nil (clojure.lang.MapEntry. k v) nil]
+            (match tree
+
+                   nil
+                   [:red nil (clojure.lang.MapEntry. k v) nil]
+
                    [color a kv b]
                    (cond
-                    (< k (KEY kv)) (rb:balance [color (PUT (ins a)) kv b])
-                    (> k (KEY kv)) (rb:balance [color a kv (PUT (ins b))])
+                    ;; XX optimize: recursively store only after known to need it
+                    (< k (KEY kv)) (rb:balance [color (PUT (ins (GET a))) kv b])
+                    (> k (KEY kv)) (rb:balance [color a kv (PUT (ins (GET b)))])
                     :else tree)))
         [_ a y b]
-        (ins tree)]
+        ;; XX ditto, unavoidable to GET here since rb:balance does PUT
+        (GET
+         (ins (GET tree)))]
     (PUT [:black a y b])))
 
 (defn rb:conj [tree [k v]]
