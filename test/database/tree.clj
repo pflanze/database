@@ -63,23 +63,25 @@
        (range from to)))
 
 (deftest skewed
-  (def t3 (seq->rb (range-kvs 10 20)))
-  (is= (rb:depth t3)
-       5)
+  (let [t (fn []
+              (def t3 (seq->rb (range-kvs 10 20)))
+              (is= (rb:depth t3)
+                   5)
 
-  (def t4 (rb:into t3 (reverse (range-kvs 40 50))))
-  (is= (rb:depth t4)
-       6)
+              (def t4 (rb:into t3 (reverse (range-kvs 40 50))))
+              (is= (rb:depth t4)
+                   6)
 
-  (def t5 (rb:into t4 (range-kvs 40 500)))
-  (is= (rb:depth t5)
-       12)
+              (def t5 (rb:into t4 (range-kvs 40 500)))
+              (is= (rb:depth t5)
+                   12)
 
-  (def t5b (rb:into t5 (range-kvs 40 500)))
-  (is= (rb:depth t5)
-       12)
+              (def t5b (rb:into t5 (range-kvs 40 500)))
+              (is= (rb:depth t5)
+                   12)
 
-  (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
-  (is= t5 t5c)
-
-  )
+              (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
+              (is= t5 t5c))]
+    (t)
+    (binding [*save?* true]
+             (t))))
