@@ -47,16 +47,17 @@
                    (rb:depth b)))))
 
 
-;; (defn rb:balance [tree]
-;;   (match (GET tree)
-;;          (:or [:black [:red [:red a x b] y c] z d]
-;;               [:black [:red a x [:red b y c]] z d]
-;;               [:black a x [:red [:red b y c] z d]]
-;;               [:black a x [:red b y [:red c z d]]])
-;;          (PUT [:red (PUT [:black a x b])
-;;                     y
-;;                     (PUT [:black c z d])])
-;;          :else tree))
+(defn rb:balance-old [tree]
+  (match (GET tree)
+         ;;[:black nil [34 0] R]
+         (:or [:black [:red [:red a x b] y c] z d]
+              [:black [:red a x [:red b y c]] z d]
+              [:black a x [:red [:red b y c] z d]]
+              [:black a x [:red b y [:red c z d]]])
+         (PUT [:red (PUT [:black a x b])
+                    y
+                    (PUT [:black c z d])])
+         :else tree))
 
 (defn rb:balance [tree]
   (let [cont
@@ -97,7 +98,8 @@
                                        [:red c z3 d]
                                        ;; [:black a  x [:red b  y  [:red c z  d]]]
                                        ;; tree    N1 z M1    N2 z2 M2    c z2 d
-                                       (cont N1 N2 c d z z2 z3)
+                                       (do (println "cont" N1 N2 c d z z2 z3)
+                                           (cont N1 N2 c d z z2 z3))
                                        :else
                                        tree))
                          :else

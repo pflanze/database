@@ -1,7 +1,8 @@
 (ns test.database.tree
     (:require [clojure.test :refer :all]
               [chj.test :refer [is* is=]]
-              [database.tree :refer :all]))
+              [database.tree :refer :all]
+              [chj.debug :refer :all]))
 
 
 (deftest basics
@@ -71,16 +72,16 @@
   ;; XX doesn't currently enforce red vs black rules!
   ([ncases kmin kmax force-black?]
    (if (< kmin kmax)
-       (let [i (rand-int ncases) k (random-k kmin kmax)]
-         (if (< i 2)
-             ((if (and (= i 0) (not force-black?))
-                  red
-                  black)
-              (random-node 10 kmin k)
-              [k (str k)]
-              (random-node 10 (inc k) kmax))
-             nil))
-       nil))
+     (let [i (rand-int ncases) k (random-k kmin kmax)]
+       (if (< i 2)
+         (PUT ((if (and (= i 0) (not force-black?))
+                 red
+                 black)
+               (random-node 10 kmin k)
+               [k (str k)]
+               (random-node 10 (inc k) kmax)))
+         nil))
+     nil))
   ([ncases kmin kmax]
    (random-node ncases kmin kmax false))
   ([]
@@ -122,8 +123,22 @@
 (deftest t-balance
   (test-balance 100))
 
+(defn t-bal [node]
+  (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node)))))
 
+(deftest t-balance-old
+  (binding [*save?* true]
+    (dotimes [rep 100]
+      (let [node (random-node)]
+        (is (if (t-bal node)
+              true
+              (do (println "Oh Snap!" node)
+                  false)))))))
 
+(deftest t-balance-old-1
+  (binding [*save?* true]
+   (is (t-bal (black nil [34 0] 
+                     (PUT (red nil [35 0] (PUT (red nil [38 0] nil)))))))))
 
 (defn range-kvs [from to]
   (map #(vector % (str %))
