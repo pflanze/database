@@ -145,5 +145,6 @@
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is= t5 t5c))]
     (t)
-    (binding [*save?* true]
-             (t))))
+    ;; (binding [*save?* true]
+    ;;          (t))
+    ))
