@@ -14,7 +14,9 @@
 
 (defn PUT [x]
   (if *save?*
-      (s/put x)
+      (if (s/reference? x)
+          x
+          (s/put x))
       x))
 
 
