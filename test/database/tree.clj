@@ -94,8 +94,8 @@
               n))))
 
 
-(deftest t-balance
-  (dotimes [rep 100]
+(defn test-balance [n]
+  (dotimes [rep n]
            (let [
                  ;; a and b must be black (or nil) to avoid
                  ;; accidentally matching anyway which would associate
@@ -118,6 +118,11 @@
               (= (rb:balance (black (red a x (red b y c)) z d)) balanced)
               (= (rb:balance (black a x (red (red b y c) z d))) balanced)
               (= (rb:balance (black a x (red b y (red c z d)))) balanced)))))
+
+(deftest t-balance
+  (test-balance 100))
+
+
 
 
 (defn range-kvs [from to]
