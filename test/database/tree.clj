@@ -58,6 +58,62 @@
       2)))
 
 
+(defn black [a x b]
+  [:black a x b])
+(defn red [a x b]
+  [:red a x b])
+
+(defn random-k [kmin kmax]
+  "random key in given range, excl. kmax"
+  (+ kmin (rand-int (- kmax kmin))))
+
+(defn random-node
+  ;; XX doesn't currently enforce red vs black rules!
+  ([ncases kmin kmax]
+   (if (< kmin kmax)
+       (let [i (rand-int ncases) k (random-k kmin kmax)]
+         (if (< i 2)
+             ((if (= i 0)
+                  red
+                  black)
+              (random-node 10 kmin k)
+              [k (str k)]
+              (random-node 10 (inc k) kmax))
+             nil))
+       nil))
+  ([]
+   (random-node 3 10 40)))
+
+(defn random-node-other-than [seen kmin kmax]
+  (loop []
+        (let [n (random-node 3 kmin kmax)]
+          (if (contains? seen n)
+              (recur)
+              n))))
+
+
+(deftest t-balance
+  (dotimes [rep 3]
+           (let [
+                  ;; XX remove nil's again
+                 a (random-node-other-than #{nil} 1 10)
+                 x [10 "ten"]
+                 b (random-node-other-than #{nil a} 11 20)
+                 y [20 "twenty"]
+                 c (random-node-other-than #{nil a b} 21 30)
+                 z [30 "thirty"]
+                 d (random-node-other-than #{nil a b c} 31 40)
+
+                 balanced (red (black a x b)
+                               y
+                               (black c z d))]
+             (is*
+              (= (rb:balance (black (red (red a x b) y c) z d)) balanced)
+              (= (rb:balance (black (red a x (red b y c)) z d)) balanced)
+              (= (rb:balance (black a x (red (red b y c) z d))) balanced)
+              (= (rb:balance (black a x (red b y (red c z d)))) balanced)))))
+
+
 (defn range-kvs [from to]
   (map #(vector % (str %))
        (range from to)))
