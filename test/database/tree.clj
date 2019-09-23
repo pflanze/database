@@ -69,11 +69,11 @@
 
 (defn random-node
   ;; XX doesn't currently enforce red vs black rules!
-  ([ncases kmin kmax]
+  ([ncases kmin kmax force-black?]
    (if (< kmin kmax)
        (let [i (rand-int ncases) k (random-k kmin kmax)]
          (if (< i 2)
-             ((if (= i 0)
+             ((if (and (= i 0) (not force-black?))
                   red
                   black)
               (random-node 10 kmin k)
@@ -81,32 +81,38 @@
               (random-node 10 (inc k) kmax))
              nil))
        nil))
+  ([ncases kmin kmax]
+   (random-node ncases kmin kmax false))
   ([]
-   (random-node 3 10 40)))
+   (random-node 3 10 40 false)))
 
-(defn random-node-other-than [seen kmin kmax]
+(defn random-node-other-than [seen kmin kmax force-black?]
   (loop []
-        (let [n (random-node 3 kmin kmax)]
+        (let [n (random-node 3 kmin kmax force-black?)]
           (if (contains? seen n)
               (recur)
               n))))
 
 
 (deftest t-balance
-  (dotimes [rep 3]
+  (dotimes [rep 100]
            (let [
-                  ;; XX remove nil's again
-                 a (random-node-other-than #{nil} 1 10)
+                 ;; a and b must be black (or nil) to avoid
+                 ;; accidentally matching anyway which would associate
+                 ;; them with the wrong balanced positions in the
+                 ;; test.
+                 a (random-node-other-than #{} 1 10 true)
                  x [10 "ten"]
-                 b (random-node-other-than #{nil a} 11 20)
+                 b (random-node-other-than #{a} 11 20 true)
                  y [20 "twenty"]
-                 c (random-node-other-than #{nil a b} 21 30)
+                 c (random-node-other-than #{a b} 21 30 false)
                  z [30 "thirty"]
-                 d (random-node-other-than #{nil a b c} 31 40)
+                 d (random-node-other-than #{a b c} 31 40 false)
 
                  balanced (red (black a x b)
                                y
                                (black c z d))]
+             
              (is*
               (= (rb:balance (black (red (red a x b) y c) z d)) balanced)
               (= (rb:balance (black (red a x (red b y c)) z d)) balanced)
