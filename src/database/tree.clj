@@ -6,7 +6,9 @@
 
 (defn GET [x]
   (if (s/reference? x)
-      (s/get x)
+      (let [v (s/get x)]
+        (assert (not (s/reference? v)))
+        v)
       x))
 
 
