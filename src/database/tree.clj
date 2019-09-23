@@ -51,8 +51,13 @@
   (rb:add tree k v))
 
 
+
+;; XX name, or how ?
+(defn rb:into [tree pairs]
+  (reduce rb:conj tree pairs))
+
 (defn seq->rb [s]
-  (reduce rb:conj nil s))
+  (rb:into nil s))
 
 
 (defn rb:contains?
