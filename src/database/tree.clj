@@ -1,7 +1,7 @@
 (ns database.tree
     (:require [clojure.core.match :refer [match]]
               [database.store :as s]
-              [chj.util :refer [flip]]))
+              [chj.util :refer [flip vector-map]]))
 
 
 (defn GET [x]
@@ -10,6 +10,12 @@
         (assert (not (s/reference? v)))
         v)
       x))
+
+(defn GET-deeply [x]
+  (let [x* (GET x)]
+    (if (vector? x*)
+        (vector-map GET-deeply x*)
+        x*)))
 
 
 (def ^:dynamic *save?* false)
