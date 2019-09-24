@@ -43,6 +43,10 @@
 (def keyword->string
      (->* str (subs 1)))
 
+;; XX is there a better way?
+(defn vector-map [f v]
+  (apply vector (map f v)))
+
 
 ;; also see https://groups.google.com/forum/#!topic/clojure/7gCK7izwXBc
 ;;   and look into https://github.com/LonoCloud/synthread
