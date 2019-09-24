@@ -104,8 +104,7 @@
                                        [:red c z3 d]
                                        ;; [:black a  x [:red b  y  [:red c z  d]]]
                                        ;; tree    N1 z M1    N2 z2 M2    c z2 d
-                                       (do (println "cont" N1 N2 c d z z2 z3)
-                                           (cont N1 N2 c d z z2 z3))
+                                       (cont N1 N2 c d z z2 z3)
                                        :else
                                        tree))
                          :else

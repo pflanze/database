@@ -123,22 +123,40 @@
 (deftest t-balance
   (test-balance 100))
 
+
+
 (defn t-bal [node]
+  (= (GET (rb:balance node)) (GET (rb:balance-old node))))
+
+(defn t-bal-p [node]
   (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node)))))
 
 (deftest t-balance-old
-  (binding [*save?* true]
-    (dotimes [rep 100]
-      (let [node (random-node)]
-        (is (if (t-bal node)
-              true
-              (do (println "Oh Snap!" node)
-                  false)))))))
+  ;; show that t-balance and t-balance-old behave the same way for
+  ;; in-memory trees
+  (dotimes [rep 100]
+           (let [node (random-node)]
+             (is (t-bal node)))))
 
-(deftest t-balance-old-1
+'(deftest t-balance-old-1
   (binding [*save?* true]
-   (is (t-bal (black nil [34 0] 
-                     (PUT (red nil [35 0] (PUT (red nil [38 0] nil)))))))))
+           (is (t-bal-p
+                (black nil [34 0] 
+                       (PUT (red nil [35 0] (PUT (red nil [38 0] nil)))))))))
+
+
+(defn test-balance-save [n]
+  ;; show that t-balance behaves the same for in-memory trees as for
+  ;; saved ones.
+  (dotimes [rep n]
+           (let [node (binding [*save?* true] (random-node))]
+             (is (= (rb:balance (GET-deeply node))
+                    (GET-deeply (rb:balance node)))))))
+
+(deftest t-balance-save
+  (test-balance-save 100))
+
+
 
 (defn range-kvs [from to]
   (map #(vector % (str %))
