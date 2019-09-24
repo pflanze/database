@@ -131,12 +131,16 @@
 (defn t-bal-p [node]
   (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node)))))
 
-(deftest t-balance-old
+
+(defn test-balance-old [n]
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
-  (dotimes [rep 100]
+  (dotimes [rep n]
            (let [node (random-node)]
              (is (t-bal node)))))
+
+(deftest t-balance-old
+  (test-balance-old 100))
 
 '(deftest t-balance-old-1
   (binding [*save?* true]
