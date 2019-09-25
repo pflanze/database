@@ -2,6 +2,7 @@
     (:require [clojure.test :refer :all]
               [chj.test :refer [is* is=]]
               [database.tree :refer :all]
+              [database.store :refer [store=]]
               [chj.debug :refer :all]))
 
 
@@ -179,7 +180,7 @@
                    12)
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
-              (is= t5 t5c))]
+              (is (store= t5 t5c)))]
     (t)
     (binding [*save?* true]
              (t))))
