@@ -1,6 +1,4 @@
 (ns database.store
-    ;;(:require [clojure.core :exclude [get]]) nope,
-    (:refer-clojure :exclude [get])
     (:require [chj.debug :refer [p pseq]]
               [chj.io :refer [spit-frugally]]
               [chj.util :refer [class-predicate-for
@@ -187,7 +185,7 @@
              (deserialize-stream in)))
 
 
-(defn put [obj]
+(defn store-put [obj]
   (let [s
         (serialize obj)
         hash
@@ -197,7 +195,7 @@
     (spit-frugally path s)
     (Reference. hash)))
 
-(defn get [ref]
+(defn store-get [ref]
   (-> (reference-path ref)
       (deserialize-file)))
 

@@ -6,7 +6,7 @@
 
 (defn GET [x]
   (if (s/reference? x)
-      (let [v (s/get x)]
+      (let [v (s/store-get x)]
         (assert (not (s/reference? v)))
         v)
       x))
@@ -24,7 +24,7 @@
   (if *save?*
       (if (s/reference? x)
           x
-          (s/put x))
+          (s/store-put x))
       x))
 
 (defn PUT-deeply [v]

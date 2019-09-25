@@ -7,9 +7,9 @@
 (deftest unbroken-symbol-serialisation
   (is*
 
-   (= (->> (symbol "a b") db/put db/get type)
+   (= (->> (symbol "a b") db/store-put db/store-get type)
       clojure.lang.Symbol)
 
-   (= (->> (symbol "a b") db/put db/get)
+   (= (->> (symbol "a b") db/store-put db/store-get)
       (symbol "a b"))))
 
