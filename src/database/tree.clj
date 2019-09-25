@@ -80,7 +80,6 @@
 
 (defn rb:balance-old [tree]
   (match tree
-         ;;[:black nil [34 0] R]
          (:or [:black [:red [:red a x b] y c] z d]
               [:black [:red a x [:red b y c]] z d]
               [:black a x [:red [:red b y c] z d]]
