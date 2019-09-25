@@ -20,25 +20,27 @@
 
 (def ^:dynamic *save?* false)
 
+(defn not-needs-PUT? [v]
+  (or (nil? v)
+      (boolean? v)
+      (number? v)
+      (s/reference? v)))
+
 (defn PUT [x]
   (if *save?*
-      (if (s/reference? x)
+      (if (not-needs-PUT? x)
           x
           (s/store-put x))
       x))
 
 (defn PUT-deeply [v]
   "This one is really specific to rb tree"
-  (if (s/reference? v)
+  (if (not-needs-PUT? v)
       v
       (match v
-
-             nil
-             v
-             
              [color a x b]
-             (PUT (if (and (s/reference? a)
-                           (s/reference? b))
+             (PUT (if (and (not-needs-PUT? a)
+                           (not-needs-PUT? b))
                       v
                       [color (PUT-deeply a)
                              x
