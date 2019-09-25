@@ -65,6 +65,16 @@
          (inc (max (rb:depth a)
                    (rb:depth b)))))
 
+(defn rb:count [tree]
+  "The number of associations in the tree"
+  (match (GET tree)
+         nil
+         0
+         [color a kv b]
+         (+ (rb:count a)
+            1
+            (rb:count b))))
+
 
 (defn rb:balance-old [tree]
   (match tree
