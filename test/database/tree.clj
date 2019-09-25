@@ -142,12 +142,6 @@
 (deftest t-balance-old
   (test-balance-old 100))
 
-'(deftest t-balance-old-1
-  (binding [*save?* true]
-           (is (t-bal-p
-                (black nil [34 0] 
-                       (PUT (red nil [35 0] (PUT (red nil [38 0] nil)))))))))
-
 
 (defn test-balance-save [n]
   ;; show that t-balance behaves the same for in-memory trees as for
@@ -187,6 +181,5 @@
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is= t5 t5c))]
     (t)
-    ;; (binding [*save?* true]
-    ;;          (t))
-    ))
+    (binding [*save?* true]
+             (t))))
