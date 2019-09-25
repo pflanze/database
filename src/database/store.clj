@@ -45,7 +45,7 @@
   (rawhash->string (.digest hash-algorithm (.getBytes str))))
 
 
-(defrecord Reference [hash])
+(defrecord Reference [hash maybe-val]) ;; maybe-val is an atom / XX weakRef
 
 
 (defn hash-path [hash]
@@ -56,8 +56,13 @@
 
 ;; Constructor for serialisation
 
-(defn reference [str]
-  (Reference. str))
+(def no-val (gensym 'noval))
+
+(defn reference
+  ([str]
+   (Reference. str (atom no-val)))
+  ([str val]
+   (Reference. str (atom val))))
 
 (def reference? (class-predicate-for Reference))
 
@@ -193,11 +198,16 @@
         path
         (hash-path hash)]
     (spit-frugally path s)
-    (Reference. hash)))
+    (reference hash)))
 
 (defn store-get [ref]
-  (-> (reference-path ref)
-      (deserialize-file)))
+  (let [a (:maybe-val ref)  maybe-val @a]
+    (if (identical? maybe-val no-val)
+        ;; xx only need to set it, don't care about old val, faster op?
+        (swap! a (fn [_]
+                     (-> (reference-path ref)
+                         (deserialize-file))))
+        maybe-val)))
 
 
 
