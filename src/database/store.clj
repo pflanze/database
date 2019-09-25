@@ -212,8 +212,9 @@
 
 ;; XX implement an equality method in some way instead?
 (defn store= [a b]
-  (if (and (reference? a)
-           (reference? b))
-      (= (:hash a) (:hash b))
-      (= a b)))
+  (or (identical? a b)
+      (if (and (reference? a)
+               (reference? b))
+          (= (:hash a) (:hash b))
+          (= a b))))
 
