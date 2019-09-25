@@ -198,7 +198,7 @@
         path
         (hash-path hash)]
     (spit-frugally path s)
-    (reference hash)))
+    (reference hash obj)))
 
 (defn store-get [ref]
   (let [a (:maybe-val ref)  maybe-val @a]
