@@ -199,7 +199,7 @@
    (rb:ref tree k nil)))
 
 
-(defn rb:iterator [cons v0 access]
+(defn rb:iterator [cons access v0]
   (letfn [(rec [tree tail]
                (match (GET tree)
                       nil tail
@@ -209,8 +209,8 @@
          (fn [tree]
              (rec tree v0))))
 
-(def rb:keys (rb:iterator cons '() key))
-(def rb:vals (rb:iterator cons '() val))
+(def rb:keys (rb:iterator cons key '()))
+(def rb:vals (rb:iterator cons val '()))
 
 
 ;; (defn dissoc [tree x])
