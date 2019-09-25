@@ -20,3 +20,8 @@
               (spit path bytes))))
 
 
+(defn mkdir [path]
+  "Try to create path as a directory, return true if successful, false otherwise."
+  ;; How to get the OS error, please? Also, name this try-mkdir or ?
+  (.mkdir (java.io.File. path)))
+

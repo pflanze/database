@@ -1,6 +1,6 @@
 (ns database.store
     (:require [chj.debug :refer [p pseq]]
-              [chj.io :refer [spit-frugally]]
+              [chj.io :refer [spit-frugally mkdir]]
               [chj.util :refer [class-predicate-for
                                 for-each
                                 error
@@ -22,6 +22,7 @@
 
 (def the-store (Store. "db"))
 
+(mkdir (:path the-store))
 
 
 (defn chop [s]
