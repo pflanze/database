@@ -27,6 +27,26 @@
           (s/put x))
       x))
 
+(defn PUT-deeply [v]
+  "This one is really specific to rb tree"
+  (if (s/reference? v)
+      v
+      (match v
+
+             nil
+             v
+             
+             [color a x b]
+             (PUT (if (and (s/reference? a)
+                           (s/reference? b))
+                      v
+                      [color (PUT-deeply a)
+                             x
+                             (PUT-deeply b)]))
+
+             :else
+             (PUT v))))
+
 
 ;; License
 
@@ -47,23 +67,23 @@
 
 
 (defn rb:balance-old [tree]
-  (match (GET tree)
+  (match tree
          ;;[:black nil [34 0] R]
          (:or [:black [:red [:red a x b] y c] z d]
               [:black [:red a x [:red b y c]] z d]
               [:black a x [:red [:red b y c] z d]]
               [:black a x [:red b y [:red c z d]]])
-         (PUT [:red (PUT [:black a x b])
-                    y
-                    (PUT [:black c z d])])
+         [:red [:black a x b]
+               y
+               [:black c z d]]
          :else tree))
 
 (defn rb:balance [tree]
   (let [cont
         (fn [a b c d x y z]
-            (PUT [:red (PUT [:black a x b])
-                       y
-                       (PUT [:black c z d])]))]
+            [:red [:black a x b]
+                  y
+                  [:black c z d]])]
     (match (GET tree)
            [:black N1 z M1]
            (let [otherwise
@@ -111,22 +131,20 @@
 (defn rb:add [tree k v]
   (let [ins
         (fn ins [tree]
-            (match tree
+            (let [tree (GET tree)]
+              (match tree
 
-                   nil
-                   [:red nil (clojure.lang.MapEntry. k v) nil]
+                     nil
+                     [:red nil (clojure.lang.MapEntry. k v) nil]
 
-                   [color a kv b]
-                   (cond
-                    ;; XX optimize: recursively store only after known to need it
-                    (< k (key kv)) (rb:balance [color (PUT (ins (GET a))) kv b])
-                    (> k (key kv)) (rb:balance [color a kv (PUT (ins (GET b)))])
-                    :else tree)))
+                     [color a kv b]
+                     (cond
+                      (< k (key kv)) (rb:balance [color (ins a) kv b])
+                      (> k (key kv)) (rb:balance [color a kv (ins b)])
+                      :else tree))))
         [_ a y b]
-        ;; XX ditto, unavoidable to GET here since rb:balance does PUT
-        (GET
-         (ins (GET tree)))]
-    (PUT [:black a y b])))
+        (ins tree)]
+    (PUT-deeply [:black a y b])))
 
 (defn rb:conj [tree [k v]]
   (rb:add tree k v))
