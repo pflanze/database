@@ -198,17 +198,21 @@
    (rb:ref tree k nil)))
 
 
-(defn rb:vals [tree]
-  (match (GET tree)
-         nil '()
-         [_ a y b] (concat (rb:vals a)
-                           (cons (val y) (rb:vals b)))))
+(defn rb:vals
+  ([tree] (rb:vals tree '()))
+  ([tree tail]
+   (match (GET tree)
+          nil tail
+          [_ a y b] (rb:vals a
+                             (cons (val y) (rb:vals b tail))))))
 
-(defn rb:keys [tree]
-  (match (GET tree)
-         nil '()
-         [_ a y b] (concat (rb:keys a)
-                           (cons (key y) (rb:keys b)))))
+(defn rb:keys
+  ([tree] (rb:keys tree '()))
+  ([tree tail]
+   (match (GET tree)
+          nil tail
+          [_ a y b] (rb:keys a
+                             (cons (key y) (rb:keys b tail))))))
 
 ;; (defn dissoc [tree x])
 
