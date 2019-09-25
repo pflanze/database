@@ -28,13 +28,6 @@
       x))
 
 
-(defn KEY [x]
-  (key (GET x)))
-
-(defn VAL [x]
-  (val (GET x)))
-
-
 ;; License
 
 ;; Copyright © 2016 Henry Garner, 2019 Christian Jaeger & others (see
@@ -126,8 +119,8 @@
                    [color a kv b]
                    (cond
                     ;; XX optimize: recursively store only after known to need it
-                    (< k (KEY kv)) (rb:balance [color (PUT (ins (GET a))) kv b])
-                    (> k (KEY kv)) (rb:balance [color a kv (PUT (ins (GET b)))])
+                    (< k (key kv)) (rb:balance [color (PUT (ins (GET a))) kv b])
+                    (> k (key kv)) (rb:balance [color a kv (PUT (ins (GET b)))])
                     :else tree)))
         [_ a y b]
         ;; XX ditto, unavoidable to GET here since rb:balance does PUT
@@ -154,8 +147,8 @@
   (match (GET tree)
          nil false
          [_ a kv b] (cond
-                      (< k (KEY kv)) (recur a k)
-                      (> k (KEY kv)) (recur b k)
+                      (< k (key kv)) (recur a k)
+                      (> k (key kv)) (recur b k)
                       :else true)))
 
 
@@ -168,11 +161,11 @@
           k]
          (match (GET tree)
                 nil not-found
-                [_ a kv b] (let [k_ (KEY kv)]
+                [_ a kv b] (let [k_ (key kv)]
                              (cond
                               (< k k_) (recur a k)
                               (> k k_) (recur b k)
-                              :else (VAL kv))))))
+                              :else (val kv))))))
   ([tree k]
    (rb:ref tree k nil)))
 
@@ -181,13 +174,13 @@
   (match (GET tree)
          nil '()
          [_ a y b] (concat (rb:vals a)
-                           (cons (VAL y) (rb:vals b)))))
+                           (cons (val y) (rb:vals b)))))
 
 (defn rb:keys [tree]
   (match (GET tree)
          nil '()
          [_ a y b] (concat (rb:keys a)
-                           (cons (KEY y) (rb:keys b)))))
+                           (cons (key y) (rb:keys b)))))
 
 ;; (defn dissoc [tree x])
 
