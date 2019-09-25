@@ -2,6 +2,7 @@
     ;;(:require [clojure.core :exclude [get]]) nope,
     (:refer-clojure :exclude [get])
     (:require [chj.debug :refer [p pseq]]
+              [chj.io :refer [spit-frugally]]
               [chj.util :refer [class-predicate-for
                                 for-each
                                 error
@@ -193,7 +194,7 @@
         (our-hash s)
         path
         (hash-path hash)]
-    (spit path s)
+    (spit-frugally path s)
     (Reference. hash)))
 
 (defn get [ref]
