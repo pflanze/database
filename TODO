@@ -1,5 +1,4 @@
 - make rb:balance pretty again (investigate `match`, extend or wrap?)
-- does `with-open` really close the streams?
 - do exceptions happen when errors happen while writing?
 - add tests with emulated OS errors
 - fsck feature (recursively resolve all references in a given object/reference and verify that the hash sums match the file contents)
