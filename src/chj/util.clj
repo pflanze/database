@@ -1,5 +1,6 @@
 (ns chj.util
-    (:require [clojure.string :refer [join]]))
+    (:require [clojure.string :refer [join]]
+              [clojure.core.match :refer [match]]))
 
 (defn class-predicate-for [class]
   (fn [v]
@@ -55,4 +56,24 @@
 (defn flip [f]
   (fn [a b]
       (f b a)))
+
+
+;; Error-checking hash-map handling: (TODO: extend to collections, maybe more)
+
+(def no-value (gensym 'no-value))
+
+(defn xref [m k]
+  (let [v (m k no-value)]
+    (if (identical? v no-value)
+        ;; XX typed exceptions (oh, use Result ? but is explicit already)
+        (error "key not found" k)
+        v)))
+
+(defn xconj [m k+v]
+  (match k+v
+         [k v]
+         (let [v (m k no-value)]
+           (if (identical? v no-value)
+               (conj m k+v)
+               (error "key already in map" k)))))
 
