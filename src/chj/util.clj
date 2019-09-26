@@ -1,4 +1,5 @@
-(ns chj.util)
+(ns chj.util
+    (:require [clojure.string :refer [join]]))
 
 (defn class-predicate-for [class]
   (fn [v]
@@ -7,8 +8,9 @@
 (defn error
   ([msg]
    (throw (new Exception msg)))
-  ([msg val]
-   (throw (new Exception (str msg ": " val)))))
+  ([msg & vals]
+   (throw (new Exception (apply str msg ": "
+                                (join ", " (map pr-str vals)))))))
 
 
 (defmacro ->* [& forms]
