@@ -3,17 +3,18 @@
               [chj.util :refer [error hash-map-map]]))
 
 
-(defn index
-  ([entries key]
-   (index entries key identity))
-  ([entries key val]
-   (apply hash-map
-          (reduce (fn [res d]
-                      (cons (key d)
-                            (cons (val d)
-                                  res)))
-                  '()
-                  entries))))
+(defn unique-index-add [idx key row]
+  (let [val (key row)]
+    (if (contains? idx val)
+        (error "unique index already contains an entry with this field, value"
+               key val)
+        (conj idx [val row]))))
+
+(defn entries->unique-index [entries key]
+  (reduce (fn [idx row]
+              (unique-index-add idx key row))
+          {}
+          entries))
 
 
 ;; entries: a collection of 'rows'
@@ -28,26 +29,27 @@
   (Table. entries (atom {})))
 
 
-(defn table-index-for [t key-name]
+(defn table-unique-index-for [t key-name]
   (or (@(:indices t) key-name)
       ((swap! (:indices t)
               (fn [indices]
                   (conj indices
                         [key-name
-                         (index (:entries t) key-name)])))
+                         (entries->unique-index (:entries t) key-name)])))
        key-name)))
 
 
-(defn table-add [t val]
-  (Table. (conj (:entries t) val)
+(defn table-add [t row]
+  (Table. (conj (:entries t) row)
           (atom
-           (hash-map-map (fn [[key index]]
-                             [key (conj index [(key val) val])])
-                         @(:indices t)))))
+           (hash-map-map
+            (fn [[key idx]]
+                [key (unique-index-add idx key row)])
+            @(:indices t)))))
 
 
 (defn table-ref [t key-name key-val]
-  ((table-index-for t key-name) key-val))
+  ((table-unique-index-for t key-name) key-val))
 
 
 (defn table-indices [t]
