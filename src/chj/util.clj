@@ -77,3 +77,13 @@
                (conj m k+v)
                (error "key already in map" k)))))
 
+
+(defn xpartition [n s]
+  "Like partition or partition-all but throws an exception when (count s) is not
+evenly dividable by n"
+  (if (zero? (rem (count s) n))
+      (partition n s)
+      (error "count(sequence) not even divisible by the partition size"
+             (count s) n (last s))))
+
+
