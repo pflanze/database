@@ -1,6 +1,6 @@
 (ns chj.table
     (:require [chj.debug :refer [p pseq]]
-              [chj.util :refer [error hash-map-map]]))
+              [chj.util :refer [error hash-map-map xconj]]))
 
 
 (defn unique-index-add [idx key row]
@@ -40,7 +40,7 @@
 
 
 (defn table-add [t row]
-  (Table. (conj (:entries t) row)
+  (Table. (xconj (:entries t) row)
           (atom
            (hash-map-map
             (fn [[key idx]]
