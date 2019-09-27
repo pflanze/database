@@ -13,7 +13,14 @@
 Like defn (but only supports the single-definition form), but
 defines the function with nam prefixed with an underscore and an added
 first `_tree-ctx` argument, and defines a macro under the name nam
-which adds `_tree-ctx` (unhygienically) as the first argument."
+which adds `_tree-ctx` (unhygienically) as the first argument.
+
+Note: as with anything that uses unhygienic bindings, this feels
+slightly dirty. It's straight-forward enough for the limited scope of
+intended use, though, and a clean approach (gensym and then code
+walker? Communicate between the macros via dynamic variables, or a
+compile time context somehow?) would be more difficult to pull off /
+not clear how to do it in Clojure for the author."
 
   (let [_nam
         (symbol (str "_" nam))]
