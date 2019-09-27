@@ -92,7 +92,7 @@
 evenly dividable by n"
   (if (zero? (rem (count s) n))
       (partition n s)
-      (error "count(sequence) not even divisible by the partition size"
+      (error "(count sequence) not even divisible by the partition size"
              (count s) n (last s))))
 
 
