@@ -22,7 +22,7 @@ which adds `_tree-ctx` (unhygienically) as the first argument."
            ;; `~~_nam and `~'~_nam don't work, thus use org.clojure/tools.reader
            (cons* (syntax-quote ~_nam) '~'_tree-ctx args#))
          ~(if (seq binds&body)
-              (let [binds (first binds&body) body (rest binds&body)]
+              (let [[binds & body] binds&body]
                 `(defn ~_nam ~(vector-cons '_tree-ctx binds)
                    ~@body))))))
 
