@@ -96,3 +96,7 @@ evenly dividable by n"
              (count s) n (last s))))
 
 
+
+;;XX forgot what Clojure names this
+(defn cons* [a b r]
+  (cons a (cons b r)))
