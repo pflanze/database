@@ -22,8 +22,7 @@ walker? Communicate between the macros via dynamic variables, or a
 compile time context somehow?) would be more difficult to pull off /
 not clear how to do it in Clojure for the author."
 
-  (let [_nam
-        (symbol (str "_" nam))]
+  (let [_nam (symbol (str "_" nam))]
     
     `(do (defmacro ~nam [& args#]
            ;; `~~_nam and `~'~_nam don't work, thus use org.clojure/tools.reader
