@@ -1,6 +1,7 @@
 Database core
 
 - fsck feature (recursively resolve all references in a given object/reference and verify that the hash sums match the file contents)
+- GC
 - add more features to tree implementation (min, max, perhaps merge, etc.)
 - change tree implementation to be just a collection, and then build both map and set on top of it
 - store: implement mutable cells (both named, and anonymous (atoms))
@@ -20,6 +21,7 @@ Clojure and generics?
 Fancy?
 
 - make rb:balance pretty again (investigate `match`, extend or wrap?)
+  - look at https://git.sr.ht/~technomancy/fnl-match
 - do exceptions happen when errors happen while writing?
   - add tests with emulated OS errors
 
