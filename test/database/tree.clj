@@ -1,12 +1,18 @@
 (ns test.database.tree
     (:require [clojure.test :refer :all]
               [chj.test :refer [is* is=]]
-              [database.tree :refer :all]
+              [database.tree :refer
+                             [
+                              rb:depth rb:count rb:balance-old rb:balance rb:add rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
+                              defn* GET PUT GET-deeply]]
               [database.store :refer [store=]]
               [chj.debug :refer :all]))
 
 
+(def _tree-ctx {:save? false})
+
 (deftest basics
+  
   (def t nil)
   (def t (rb:add t 10 "ten"))
   (def t (rb:add t 20 "twenty"))
@@ -69,26 +75,27 @@
   "random key in given range, excl. kmax"
   (+ kmin (rand-int (- kmax kmin))))
 
-(defn random-node
+(defn* random-node)
+(defn _random-node
   ;; XX doesn't currently enforce red vs black rules!
-  ([ncases kmin kmax force-black?]
+  ([_tree-ctx ncases kmin kmax force-black?]
    (if (< kmin kmax)
-     (let [i (rand-int ncases) k (random-k kmin kmax)]
-       (if (< i 2)
-         (PUT ((if (and (= i 0) (not force-black?))
-                 red
-                 black)
-               (random-node 10 kmin k)
-               [k (str k)]
-               (random-node 10 (inc k) kmax)))
-         nil))
-     nil))
-  ([ncases kmin kmax]
+       (let [i (rand-int ncases) k (random-k kmin kmax)]
+         (if (< i 2)
+             (PUT ((if (and (= i 0) (not force-black?))
+                       red
+                       black)
+                   (random-node 10 kmin k)
+                   [k (str k)]
+                   (random-node 10 (inc k) kmax)))
+             nil))
+       nil))
+  ([_tree-ctx ncases kmin kmax]
    (random-node ncases kmin kmax false))
-  ([]
+  ([_tree-ctx ]
    (random-node 3 10 40 false)))
 
-(defn random-node-other-than [seen kmin kmax force-black?]
+(defn* random-node-other-than [seen kmin kmax force-black?]
   (loop []
         (let [n (random-node 3 kmin kmax force-black?)]
           (if (contains? seen n)
@@ -96,7 +103,7 @@
               n))))
 
 
-(defn test-balance [n]
+(defn* test-balance [n]
   (dotimes [rep n]
            (let [
                  ;; a and b must be black (or nil) to avoid
@@ -137,7 +144,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (random-node)]
+           (let [node (_random-node {:save? false})]
              (is (t-bal node)))))
 
 (deftest t-balance-old
@@ -148,7 +155,7 @@
   ;; show that t-balance behaves the same for in-memory trees as for
   ;; saved ones.
   (dotimes [rep n]
-           (let [node (binding [*save?* true] (random-node))]
+           (let [node (_random-node {:save? true})] ;; XX don't replace, add
              (is (= (rb:balance (GET-deeply node))
                     (GET-deeply (rb:balance node)))))))
 
@@ -162,7 +169,7 @@
        (range from to)))
 
 (deftest skewed
-  (let [t (fn []
+  (let [t (fn [_tree-ctx]
               (def t3 (seq->rb (range-kvs 10 20)))
               (is= (rb:depth t3)
                    5)
@@ -181,6 +188,5 @@
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is (store= t5 t5c)))]
-    (t)
-    (binding [*save?* true]
-             (t))))
+    (t {:save? false})
+    (t {:save? true})))

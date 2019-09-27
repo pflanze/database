@@ -5,7 +5,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [mvxcvi/multihash "2.0.3"]
-                 [org.clojure/core.match "0.3.0"]]
+                 [org.clojure/core.match "0.3.0"]
+                 [org.clojure/tools.reader "1.3.2"]]
   ;; :dev-dependencies [[swank-clojure "1.3.0-SNAPSHOT"]]
   :main database.tree
   ;;:repl-options {:init-ns database.main}

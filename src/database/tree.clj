@@ -1,24 +1,46 @@
 (ns database.tree
     (:require [clojure.core.match :refer [match]]
+              [clojure.tools.reader :refer [syntax-quote]]
               [database.store :as s]
-              [chj.util :refer [flip vector-map]]))
+              [chj.debug :refer [p]]
+              [chj.util :refer [flip vector-map ->vector vector-cons cons*]]))
 
 
-(defn GET [x]
+
+(defmacro defn* [nam & binds&body]
+  "'Automatic' context threading for tree ops.
+
+Like defn (but only supports the single-definition form), but
+defines the function with nam prefixed with an underscore and an added
+first `_tree-ctx` argument, and defines a macro under the name nam
+which adds `_tree-ctx` (unhygienically) as the first argument."
+
+  (let [_nam
+        (symbol (str "_" nam))]
+    
+    `(do (defmacro ~nam [& args#]
+           ;; `~~_nam and `~'~_nam don't work, thus use org.clojure/tools.reader
+           (cons* (syntax-quote ~_nam) '~'_tree-ctx args#))
+         ~(if (seq binds&body)
+              (let [binds (first binds&body) body (rest binds&body)]
+                `(defn ~_nam ~(vector-cons '_tree-ctx binds)
+                   ~@body))))))
+
+
+
+(defn* GET [x]
   (if (s/reference? x)
       (let [v (s/store-get x)]
         (assert (not (s/reference? v)))
         v)
       x))
 
-(defn GET-deeply [x]
+(defn* GET-deeply [x]
   (let [x* (GET x)]
     (if (vector? x*)
-        (vector-map GET-deeply x*)
+        (vector-map #(GET-deeply %) x*)
         x*)))
 
-
-(def ^:dynamic *save?* false)
 
 (defn not-needs-PUT? [v]
   (or (nil? v)
@@ -26,14 +48,14 @@
       (number? v)
       (s/reference? v)))
 
-(defn PUT [x]
-  (if *save?*
+(defn* PUT [x]
+  (if (:save? _tree-ctx)
       (if (not-needs-PUT? x)
           x
           (s/store-put x))
       x))
 
-(defn PUT-deeply [v]
+(defn* PUT-deeply [v]
   "This one is really specific to rb tree"
   (if (not-needs-PUT? v)
       v
@@ -58,7 +80,7 @@
 ;; Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
 
-(defn rb:depth [tree]
+(defn* rb:depth [tree]
   "The max depth of the tree, for debugging purposes"
   (match (GET tree)
          nil
@@ -67,7 +89,7 @@
          (inc (max (rb:depth a)
                    (rb:depth b)))))
 
-(defn rb:count [tree]
+(defn* rb:count [tree]
   "The number of associations in the tree"
   (match (GET tree)
          nil
@@ -78,7 +100,7 @@
             (rb:count b))))
 
 
-(defn rb:balance-old [tree]
+(defn* rb:balance-old [tree]
   (match tree
          (:or [:black [:red [:red a x b] y c] z d]
               [:black [:red a x [:red b y c]] z d]
@@ -89,7 +111,7 @@
                [:black c z d]]
          :else tree))
 
-(defn rb:balance [tree]
+(defn* rb:balance [tree]
   (let [cont
         (fn [a b c d x y z]
             [:red [:black a x b]
@@ -139,7 +161,7 @@
            :else tree)))
 
 
-(defn rb:add [tree k v]
+(defn* rb:add [tree k v]
   (let [ins
         (fn ins [tree]
             (let [tree (GET tree)]
@@ -157,33 +179,36 @@
         (ins tree)]
     (PUT-deeply [:black a y b])))
 
-(defn rb:conj [tree [k v]]
+(defn* rb:conj [tree [k v]]
   (rb:add tree k v))
 
 
 
 ;; XX name, or how ?
-(defn rb:into [tree pairs]
-  (reduce rb:conj tree pairs))
+(defn* rb:into [tree pairs]
+  (reduce #(rb:conj %1 %2) tree pairs))
 
-(defn seq->rb [s]
+(defn* seq->rb [s]
   (rb:into nil s))
 
 
-(defn rb:contains?
-  "Check if the key is present"
+(defn* rb:contains?
   [tree k]
-  (match (GET tree)
-         nil false
-         [_ a kv b] (cond
-                      (< k (key kv)) (recur a k)
-                      (> k (key kv)) (recur b k)
-                      :else true)))
+  ;; XX does this work as doc-string?
+  "Check if the key is present"
+  (loop [tree tree]
+        (match (GET tree)
+               nil false
+               [_ a kv b] (cond
+                           (< k (key kv)) (recur a)
+                           (> k (key kv)) (recur b)
+                           :else true))))
 
 
-(defn rb:ref
+(defn* rb:ref)
+(defn _rb:ref
   "Check if the key is present and return value or a default"
-  ([tree k not-found]
+  ([_tree-ctx tree k not-found]
    (loop [tree
           tree
           k
@@ -195,22 +220,25 @@
                               (< k k_) (recur a k)
                               (> k k_) (recur b k)
                               :else (val kv))))))
-  ([tree k]
-   (rb:ref tree k nil)))
+  ([_tree-ctx tree k]
+   (_rb:ref _tree-ctx tree k nil)))
 
 
-(defn rb:iterator [cons access v0]
-  (letfn [(rec [tree tail]
-               (match (GET tree)
-                      nil tail
-                      [_ a y b] (rec a
-                                     (cons (access y)
-                                           (rec b tail)))))]
-         (fn [tree]
+(defn rb-iterator [cons access v0]
+  (fn [_tree-ctx tree]
+      (letfn [(rec [tree tail]
+                   (match (GET tree)
+                          nil tail
+                          [_ a y b] (rec a
+                                         (cons (access y)
+                                               (rec b tail)))))]
              (rec tree v0))))
 
-(def rb:keys (rb:iterator cons key '()))
-(def rb:vals (rb:iterator cons val '()))
+(defn* rb:keys)
+(defn* rb:vals)
+(def _rb:keys (rb-iterator cons key '()))
+(def _rb:vals (rb-iterator cons val '()))
+
 
 
 ;; (defn dissoc [tree x])
