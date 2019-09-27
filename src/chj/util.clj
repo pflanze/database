@@ -100,3 +100,9 @@ evenly dividable by n"
 ;;XX forgot what Clojure names this
 (defn cons* [a b r]
   (cons a (cons b r)))
+
+(defn ->vector [s]
+  (apply vector s))
+
+(defn vector-cons [a s]
+  (->vector (cons a s)))
