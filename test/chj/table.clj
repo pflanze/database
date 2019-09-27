@@ -76,9 +76,21 @@
 
   (def t3 (table-add t2 [5 "five"]))
 
-  (is= (table-ref t3 first 1)
-       [1 "one"])
-  (is= (table-ref t3 first 5)
-       [5 "five"]))
+  (is*
+
+   (thrown-with-msg?
+    Exception
+    #"unique index already contains an entry with this field, value:.*first"
+    (table-add t3 [5 "five 2"]))
+
+   (thrown-with-msg?
+    Exception
+    #"unique index already contains an entry with this field, value:.*second"
+    (table-add t3 [6 "five"]))
+
+   (= (table-ref t3 first 1)
+      [1 "one"])
+   (= (table-ref t3 first 5)
+      [5 "five"])))
 
 
