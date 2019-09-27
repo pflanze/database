@@ -69,13 +69,22 @@
         (error "key not found" k)
         v)))
 
-(defn xconj [m k+v]
-  (match k+v
-         [k v]
-         (let [v (m k no-value)]
-           (if (identical? v no-value)
-               (conj m k+v)
-               (error "key already in map" k)))))
+(defn xconj [c kv]
+  (cond
+   (map? c)
+   (match kv
+          [k v]
+          (if (contains? c k)
+              (error "key already in map" k)
+              (conj c kv)))
+
+   (coll? c)
+   (if (contains? c kv)
+       (error "value already in collection" kv)
+       (conj c kv))
+
+   :else
+   (error "xconj: no method for" (type c))))
 
 
 (defn xpartition [n s]
