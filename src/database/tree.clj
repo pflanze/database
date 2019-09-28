@@ -239,11 +239,12 @@ not clear how to do it in Clojure for the author."
 (defn rb-iterator [cons access v0]
   (fn [_tree-ctx tree]
       (letfn [(rec [tree tail]
-                   (match (GET tree)
-                          nil tail
-                          [_ a y b] (rec a
-                                         (cons (access y)
-                                               (rec b tail)))))]
+                   (lazy-seq
+                    (match (GET tree)
+                           nil tail
+                           [_ a y b] (rec a
+                                          (cons (access y)
+                                                (rec b tail))))))]
              (rec tree v0))))
 
 (defn* rb:keys)
