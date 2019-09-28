@@ -14,6 +14,16 @@
                                 (join ", " (map pr-str vals)))))))
 
 
+(defn predicate-error [pred val]
+  (error "predicate does not accept value" pred val))
+
+(defmacro => [pred expr]
+  `(let [p# ~pred v# ~expr]
+     (if (p# v#)
+         v#
+         (predicate-error p# v#))))
+
+
 (defmacro ->* [& forms]
   `(fn [v#]
        (-> v# ~@forms)))
