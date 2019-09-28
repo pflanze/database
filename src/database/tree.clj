@@ -13,7 +13,7 @@
   (->TreeCtx (:the-store c)
              b))
 
-(defn TreeCtx-dontstore [c] (TreeCtx-store?-set c false))
+(defn TreeCtx-donotstore [c] (TreeCtx-store?-set c false))
 (defn TreeCtx-dostore [c] (TreeCtx-store?-set c true))
 
 

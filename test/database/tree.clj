@@ -6,7 +6,7 @@
                [
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
-                ->TreeCtx TreeCtx-dostore TreeCtx-dontstore
+                ->TreeCtx TreeCtx-dostore TreeCtx-donotstore
                 defn* GET PUT GET-deeply]]
               [database.store :refer [open-store store=]]
               [chj.debug :refer :all]))
@@ -192,5 +192,5 @@
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is (store= t5 t5c)))]
-    (t (TreeCtx-dontstore _tree-ctx))
+    (t (TreeCtx-donotstore _tree-ctx))
     (t (TreeCtx-dostore _tree-ctx))))
