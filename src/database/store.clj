@@ -18,13 +18,93 @@
              [java.util Base64]))
 
 
-(defrecord Store [path])
+;; Mechanism:
+
+;; A reference is a representation of a stored value (via hash).
+;; It can also contain a pointer to the actual value (in memory).
+
+;; XX then it is cleared occasionally XX (avoid using WeakRef ?)
+
+;; The cache is just randomized
+
+
+
+;; Reference
+
+;; [String Long (Atom no-val|value)]
+;; (long uses 64 bits)
+(defrecord Reference [hash hashlong possibly-val])
+
+(def no-val (gensym 'noval))
+
+(defn reference
+  ([str long]
+   (->Reference str long (atom no-val)))
+  ([str long val]
+   (->Reference str long (atom val))))
+
+(def string->hashlong)
+(defn reference-1 [str]
+  "reference constructor for deserialisation (safer, don't allow multiple arguments)"
+  (reference str (string->hashlong str)))
+
+(def reference? (class-predicate-for Reference))
+
+(defn reference= [a b]
+  (= (:hash a) (:hash b)))
+
+
+;; Reference cache
+
+;; xx
+(def referenceCache-start-size 16) ;; items, must be a power of 2
+
+(defn make-referenceCache
+  ([]
+   (make-referenceCache referenceCache-start-size))
+  ([n]
+   (make-array Reference n)))
+
+(def store-get-from-disk)
+(defn referenceCache-get [the-store ref]
+  (let [
+        a (:cache the-store)
+        siz (count a)
+        i (bit-and (:hashint ref) (dec siz))]
+    (letfn [(slowpath []
+                      (let [v (store-get-from-disk the-store ref)]
+                        (aset a i v)
+                        v))]
+           (if-let [r (aget a i)]
+                   (if (reference= r ref)
+                       @(:possibly-val r)
+                       ;;^ XX but now will have a copy of a reference
+                       ;;  with also a hard pointer
+                       (slowpath))
+                   (slowpath)))))
+
+;; xx
+;; (defn referenceCache-resize-up [v]
+;;   (let [
+;;         siz (count v)
+;;         siz* (bit-shift-left siz 1)
+;;         v* (make-array Reference siz*)]
+;;     (loop [i 0]
+;;           (if (< i siz)
+;;               (do
+;;                   ())))))
+
+
+
+;; Store
+
+(defrecord Store [path cache])
 
 (def Store? (class-predicate-for Store))
 
 (defn open-store [path]
   (mkdir path)
-  (->Store path))
+  (->Store path (atom (make-referenceCache))))
 
 
 
@@ -36,20 +116,32 @@
       (.replace \/ \_)
       (chop)))
 
-;; (defn string->rawhash [s]
-;;   (.decode (Base64/getDecoder) (-> s
-;;                                    (.replace \_ \/)
-;;                                    (str \=))))
+
+(defn byte-signed-to-unsigned [b]
+  ;; (if (< b 0) (+ b 256) b)
+  (bit-and b 255))
+
+(defn rawhash->hashlong [bytes]
+  (letfn [(get [i]
+               (bit-shift-left (byte-signed-to-unsigned (aget bytes i))
+                               (bit-shift-left i 3)))]
+         (+ (get 0) (get 1) (get 2) (get 3) (get 4) (get 5) (get 6))))
+
+
+(defn string->rawhash [s]
+  (.decode (Base64/getDecoder) (-> s
+                                   (.replace \_ \/)
+                                   (str \=))))
+
+(def string->hashlong (->* string->rawhash rawhash->hashlong))
 
 
 (def hash-algorithm
      (MessageDigest/getInstance "SHA-256"))
 
 (defn our-hash [str]
-  (rawhash->string (.digest hash-algorithm (.getBytes str))))
+  (.digest hash-algorithm (.getBytes str)))
 
-
-(defrecord Reference [hash maybe-val]) ;; maybe-val is an atom / XX weakRef
 
 
 (defn hash-path [the-store hash]
@@ -59,17 +151,6 @@
 (defn reference-path [the-store ref]
   (hash-path the-store (:hash ref)))
 
-;; Constructor for serialisation
-
-(def no-val (gensym 'noval))
-
-(defn reference
-  ([str]
-   (Reference. str (atom no-val)))
-  ([str val]
-   (Reference. str (atom val))))
-
-(def reference? (class-predicate-for Reference))
 
 
 (defn map-entry [k v]
@@ -147,7 +228,7 @@
                        (list 'map-entry (key v) (val v))))
  (type-transformer database.store.Reference
                    'reference
-                   reference
+                   reference-1
                    (fn [v]
                        (list 'reference (:hash v))))
  (type-transformer clojure.lang.PersistentVector
@@ -200,28 +281,37 @@
   ;; (assert (not (Store? obj)))
   (let [s
         (serialize obj)
-        hash
+        rawhash
         (our-hash s)
+        hashstr
+        (rawhash->string rawhash)
+        hashlong
+        (rawhash->hashlong rawhash)
         path
         (hash-path the-store hash)]
     (spit-frugally path s)
-    (reference hash obj)))
+    (reference hash hashlong obj)))
+
+
+(defn store-get-from-disk [the-store ref]
+  (-> (reference-path the-store ref)
+      (deserialize-file)))
 
 (defn store-get [the-store ref]
-  (let [a (:maybe-val ref)  maybe-val @a]
-    (if (identical? maybe-val no-val)
+  (let [a (:possibly-val ref)  possibly-val @a]
+    (if (identical? possibly-val no-val)
         ;; xx only need to set it, don't care about old val, faster op?
         (swap! a (fn [_]
-                     (-> (reference-path the-store ref)
-                         (deserialize-file))))
-        maybe-val)))
+                     (referenceCache-get the-store ref)))
+        possibly-val)))
 
 
 ;; XX implement an equality method in some way instead?
 (defn store= [a b]
   (or (identical? a b)
-      (if (and (reference? a)
-               (reference? b))
-          (= (:hash a) (:hash b))
+      (if (reference? a)
+          (if (reference? b)
+              (reference= a b)
+              false)
           (= a b))))
 
