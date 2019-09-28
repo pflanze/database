@@ -148,7 +148,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (_random-node (TreeCtx-dostore _tree-ctx))]
+           (let [node (_random-node (TreeCtx-donotstore _tree-ctx))]
              (is (t-bal node)))))
 
 (deftest t-balance-old
