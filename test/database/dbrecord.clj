@@ -8,11 +8,14 @@
 (defdbrecord pair [car cdr])
 
 (deftest reversibility
+
+  (def s (s/open-store "db"))
+
   (is*
  
-   (= (-> (Pair. 10 (Pair. 20 30)) s/store-put s/store-get)
+   (= (->> (Pair. 10 (Pair. 20 30)) (s/store-put s) (s/store-get s))
       (Pair. 10 (Pair. 20 30)))
 
-   (= (-> (pair 10 (pair 20 30)) s/store-put s/store-get)
+   (= (->> (pair 10 (pair 20 30)) (s/store-put s) (s/store-get s))
       (pair 10 (pair 20 30)))))
 

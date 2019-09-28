@@ -1,15 +1,19 @@
 (ns test.database.tree
     (:require [clojure.test :refer :all]
               [chj.test :refer [is* is=]]
-              [database.tree :refer
-                             [
-                              rb:depth rb:count rb:balance-old rb:balance rb:add rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
-                              defn* GET PUT GET-deeply]]
-              [database.store :refer [store=]]
+              [database.tree
+               :refer
+               [
+                rb:depth rb:count rb:balance-old rb:balance rb:add
+                rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
+                ->TreeCtx TreeCtx-dostore TreeCtx-dontstore
+                defn* GET PUT GET-deeply]]
+              [database.store :refer [open-store store=]]
               [chj.debug :refer :all]))
 
 
-(def _tree-ctx {:save? false})
+(def _tree-ctx (->TreeCtx (open-store "db")
+                          false))
 
 (deftest basics
   
@@ -144,7 +148,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (_random-node {:save? false})]
+           (let [node (_random-node (TreeCtx-dostore _tree-ctx))]
              (is (t-bal node)))))
 
 (deftest t-balance-old
@@ -155,7 +159,7 @@
   ;; show that t-balance behaves the same for in-memory trees as for
   ;; saved ones.
   (dotimes [rep n]
-           (let [node (_random-node {:save? true})] ;; XX don't replace, add
+           (let [node (_random-node (TreeCtx-dostore _tree-ctx))]
              (is (= (rb:balance (GET-deeply node))
                     (GET-deeply (rb:balance node)))))))
 
@@ -188,5 +192,5 @@
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is (store= t5 t5c)))]
-    (t {:save? false})
-    (t {:save? true})))
+    (t (TreeCtx-dontstore _tree-ctx))
+    (t (TreeCtx-dostore _tree-ctx))))

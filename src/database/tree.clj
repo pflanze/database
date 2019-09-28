@@ -6,6 +6,15 @@
               [chj.util :refer [flip vector-map ->vector vector-cons cons*]]))
 
 
+(defrecord TreeCtx [the-store store?])
+
+(defn TreeCtx-store?-set [c b]
+  (->TreeCtx {:the-store c}
+             b))
+
+(defn TreeCtx-dontstore [c] (TreeCtx-store?-set c false))
+(defn TreeCtx-dostore [c] (TreeCtx-store?-set c true))
+
 
 (defmacro defn* [nam & binds&body]
   "'Automatic' context threading for tree ops.
@@ -36,7 +45,7 @@ not clear how to do it in Clojure for the author."
 
 (defn* GET [x]
   (if (s/reference? x)
-      (let [v (s/store-get x)]
+      (let [v (s/store-get (:the-store _tree-ctx) x)]
         (assert (not (s/reference? v)))
         v)
       x))
@@ -58,7 +67,7 @@ not clear how to do it in Clojure for the author."
   (if (:save? _tree-ctx)
       (if (not-needs-PUT? x)
           x
-          (s/store-put x))
+          (s/store-put (:the-store _tree-ctx) x))
       x))
 
 (defn* PUT-deeply [v]

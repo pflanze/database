@@ -20,9 +20,12 @@
 
 (defrecord Store [path])
 
-(def the-store (Store. "db"))
+(def Store? (class-predicate-for Store))
 
-(mkdir (:path the-store))
+(defn open-store [path]
+  (mkdir path)
+  (->Store path))
+
 
 
 (defn chop [s]
@@ -49,11 +52,12 @@
 (defrecord Reference [hash maybe-val]) ;; maybe-val is an atom / XX weakRef
 
 
-(defn hash-path [hash]
+(defn hash-path [the-store hash]
+  (assert (Store? the-store))
   (str (:path the-store) "/" hash))
 
-(defn reference-path [ref]
-  (hash-path (:hash ref)))
+(defn reference-path [the-store ref]
+  (hash-path the-store (:hash ref)))
 
 ;; Constructor for serialisation
 
@@ -191,22 +195,24 @@
              (deserialize-stream in)))
 
 
-(defn store-put [obj]
+(defn store-put [the-store obj]
+  ;; (assert (Store? the-store))
+  ;; (assert (not (Store? obj)))
   (let [s
         (serialize obj)
         hash
         (our-hash s)
         path
-        (hash-path hash)]
+        (hash-path the-store hash)]
     (spit-frugally path s)
     (reference hash obj)))
 
-(defn store-get [ref]
+(defn store-get [the-store ref]
   (let [a (:maybe-val ref)  maybe-val @a]
     (if (identical? maybe-val no-val)
         ;; xx only need to set it, don't care about old val, faster op?
         (swap! a (fn [_]
-                     (-> (reference-path ref)
+                     (-> (reference-path the-store ref)
                          (deserialize-file))))
         maybe-val)))
 
