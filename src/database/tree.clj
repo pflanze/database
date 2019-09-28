@@ -96,26 +96,6 @@ not clear how to do it in Clojure for the author."
 ;; Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
 
 
-(defn* rb:depth [tree]
-  "The max depth of the tree, for debugging purposes"
-  (match (GET tree)
-         nil
-         0
-         [color a kv b]
-         (inc (max (rb:depth a)
-                   (rb:depth b)))))
-
-(defn* rb:count [tree]
-  "The number of associations in the tree"
-  (match (GET tree)
-         nil
-         0
-         [color a kv b]
-         (+ (rb:count a)
-            1
-            (rb:count b))))
-
-
 (defn* rb:balance-old [tree]
   (match tree
          (:or [:black [:red [:red a x b] y c] z d]
@@ -251,6 +231,26 @@ not clear how to do it in Clojure for the author."
 (defn* rb:vals)
 (def _rb:keys (rb-iterator cons key '()))
 (def _rb:vals (rb-iterator cons val '()))
+
+
+(defn* rb:depth [tree]
+  "The max depth of the tree, for debugging purposes"
+  (match (GET tree)
+         nil
+         0
+         [color a kv b]
+         (inc (max (rb:depth a)
+                   (rb:depth b)))))
+
+(defn* rb:count [tree]
+  "The number of associations in the tree"
+  (match (GET tree)
+         nil
+         0
+         [color a kv b]
+         (+ (rb:count a)
+            1
+            (rb:count b))))
 
 
 
