@@ -100,3 +100,11 @@ evenly dividable by n"
 
 (defn vector-cons [a s]
   (->vector (cons a s)))
+
+
+(defn inc! [a]
+  (swap! a inc))
+
+(defn dec! [a]
+  (swap! a inc))
+
