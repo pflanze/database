@@ -15,7 +15,6 @@ Database core: context
 
 Clojure and generics?
 
-- make tree implementation work with all serializeable data types as keys
 - plug into `conj`, `(:key t)`, etc.?
 
 Fancy?

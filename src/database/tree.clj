@@ -187,10 +187,10 @@ not clear how to do it in Clojure for the author."
                      [:red nil (clojure.lang.MapEntry. k v) nil]
 
                      [color a kv b]
-                     (cond
-                      (< k (key kv)) (rb:balance [color (ins a) kv b])
-                      (> k (key kv)) (rb:balance [color a kv (ins b)])
-                      :else tree))))
+                     (case (compare k (key kv))
+                       -1 (rb:balance [color (ins a) kv b])
+                       1 (rb:balance [color a kv (ins b)])
+                       0 tree))))
         [_ a y b]
         (ins tree)]
     (PUT-deeply [:black a y b])))
@@ -215,10 +215,10 @@ not clear how to do it in Clojure for the author."
   (loop [tree tree]
         (match (GET tree)
                nil false
-               [_ a kv b] (cond
-                           (< k (key kv)) (recur a)
-                           (> k (key kv)) (recur b)
-                           :else true))))
+               [_ a kv b] (case (compare k (key kv))
+                            -1 (recur a)
+                            1 (recur b)
+                            0 true))))
 
 
 (defn* rb:ref)
@@ -231,11 +231,10 @@ not clear how to do it in Clojure for the author."
           k]
          (match (GET tree)
                 nil not-found
-                [_ a kv b] (let [k_ (key kv)]
-                             (cond
-                              (< k k_) (recur a k)
-                              (> k k_) (recur b k)
-                              :else (val kv))))))
+                [_ a kv b] (case (compare k (key kv))
+                             -1 (recur a k)
+                             1 (recur b k)
+                             0 (val kv)))))
   ([_tree-ctx tree k]
    (_rb:ref _tree-ctx tree k nil)))
 
