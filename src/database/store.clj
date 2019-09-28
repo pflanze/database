@@ -290,9 +290,9 @@
         hashlong
         (rawhash->hashlong rawhash)
         path
-        (hash-path the-store hash)]
+        (hash-path the-store hashstr)]
     (spit-frugally path s)
-    (reference hash hashlong obj)))
+    (reference hashstr hashlong obj)))
 
 
 (defn store-get-from-disk [the-store ref]
