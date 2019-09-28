@@ -9,7 +9,7 @@
 (defrecord TreeCtx [the-store store?])
 
 (defn TreeCtx-store?-set [c b]
-  (->TreeCtx {:the-store c}
+  (->TreeCtx (:the-store c)
              b))
 
 (defn TreeCtx-dontstore [c] (TreeCtx-store?-set c false))
