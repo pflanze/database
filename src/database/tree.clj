@@ -65,7 +65,7 @@ not clear how to do it in Clojure for the author."
       (s/reference? v)))
 
 (defn* PUT [x]
-  (if (=> boolean? (:save? _tree-ctx))
+  (if (=> boolean? (:store? _tree-ctx))
       (if (not-needs-PUT? x)
           x
           (s/store-put (:the-store _tree-ctx) x))
