@@ -225,10 +225,7 @@ not clear how to do it in Clojure for the author."
 (defn _rb:ref
   "Check if the key is present and return value or a default"
   ([_tree-ctx tree k not-found]
-   (loop [tree
-          tree
-          k
-          k]
+   (loop [tree tree k k]
          (match (GET tree)
                 nil not-found
                 [_ a kv b] (case (compare k (key kv))
