@@ -39,8 +39,10 @@
 
 (defn reference
   ([str long]
-   (->Reference str long (atom no-val)))
+   (reference str long no-val))
   ([str long val]
+   (assert (string? str))
+   (assert (int? long)) ;; `int?` accepts longs and there's no `long?` predicate?
    (->Reference str long (atom val))))
 
 (def string->hashlong)
