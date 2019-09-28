@@ -3,7 +3,8 @@
               [clojure.tools.reader :refer [syntax-quote]]
               [database.store :as s]
               [chj.debug :refer [p]]
-              [chj.util :refer [flip vector-map ->vector vector-cons cons*]]))
+              [chj.util :refer [flip vector-map ->vector vector-cons cons*
+                                     =>]]))
 
 
 (defrecord TreeCtx [the-store store?])
@@ -64,7 +65,7 @@ not clear how to do it in Clojure for the author."
       (s/reference? v)))
 
 (defn* PUT [x]
-  (if (:save? _tree-ctx)
+  (if (=> boolean? (:save? _tree-ctx))
       (if (not-needs-PUT? x)
           x
           (s/store-put (:the-store _tree-ctx) x))

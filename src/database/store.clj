@@ -277,8 +277,8 @@
 
 
 (defn store-put [the-store obj]
-  ;; (assert (Store? the-store))
-  ;; (assert (not (Store? obj)))
+  (assert (Store? the-store))
+  (assert (not (Store? obj)))
   (let [s
         (serialize obj)
         rawhash
@@ -298,6 +298,8 @@
       (deserialize-file)))
 
 (defn store-get [the-store ref]
+  (assert (Store? the-store))
+  (assert (reference? ref))
   (let [a (:possibly-val ref)  possibly-val @a]
     (if (identical? possibly-val no-val)
         ;; xx only need to set it, don't care about old val, faster op?
