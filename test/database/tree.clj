@@ -4,6 +4,7 @@
               [database.tree
                :refer
                [
+                node red black
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -13,7 +14,8 @@
                :refer
                [
                 open-store store= reference
-                store-statistics store-statistics-reset!]]
+                           store-statistics store-statistics-reset!]]
+              [chj.util :refer [map-entry]]
               [chj.debug :refer :all]))
 
 
@@ -45,7 +47,7 @@
        '("ten" "twenty")))
 
 
-(deftest t-seq->rb
+(deftest t-seq->rb+depth
 
   (def s [[10 "ten"] [20 "twenty"]])
 
@@ -54,31 +56,18 @@
   
   (is*
    (= t1
-      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil]])
+      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil 1] 2])
+   (= (rb:depth t1)
+      2)
    (= t2
-      [:black [:red nil [10 "ten"] nil] [20 "twenty"] nil])))
-
-
-(deftest t-depth
-  (is*
+      [:black [:red nil [10 "ten"] nil 1] [20 "twenty"] nil 2])
+   (= (rb:depth t2)
+      2)
    (= (rb:depth nil)
       0)
    (= (rb:depth (rb:add nil 4 "4"))
-      1)
-   (= t
-      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil]])
-   (= (rb:depth t)
-      2)
-   (= t2
-      [:black [:red nil [10 "ten"] nil] [20 "twenty"] nil])
-   (= (rb:depth t2)
-      2)))
+      1)))
 
-
-(defn black [a x b]
-  [:black a x b])
-(defn red [a x b]
-  [:red a x b])
 
 (defn random-k [kmin kmax]
   "random key in given range, excl. kmax"
@@ -91,11 +80,12 @@
    (if (< kmin kmax)
        (let [i (rand-int ncases) k (random-k kmin kmax)]
          (if (< i 2)
-             (PUT ((if (and (= i 0) (not force-black?))
-                       red
-                       black)
+             (PUT (node
+                   (if (and (= i 0) (not force-black?))
+                       :red
+                       :black)
                    (random-node 10 kmin k)
-                   [k (str k)]
+                   (map-entry k (str k))
                    (random-node 10 (inc k) kmax)))
              nil))
        nil))
@@ -120,11 +110,11 @@
                  ;; them with the wrong balanced positions in the
                  ;; test.
                  a (random-node-other-than #{} 1 10 true)
-                 x [10 "ten"]
+                 x (map-entry 10 "ten")
                  b (random-node-other-than #{a} 11 20 true)
-                 y [20 "twenty"]
+                 y (map-entry 20 "twenty")
                  c (random-node-other-than #{a b} 21 30 false)
-                 z [30 "thirty"]
+                 z (map-entry 30 "thirty")
                  d (random-node-other-than #{a b c} 31 40 false)
 
                  balanced (red (black a x b)
