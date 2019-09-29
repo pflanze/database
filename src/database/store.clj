@@ -167,7 +167,9 @@
 
 
 (defn type? [v]
-  (= (type v) java.lang.Class))
+  (or (= (type v) java.lang.Class)
+      ;; (type nil) is nil, so nil is valid as a type, sigh:
+      (nil? v)))
 
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
