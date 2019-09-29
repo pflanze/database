@@ -132,3 +132,9 @@ evenly dividable by n"
       ;; (type nil) is nil, so nil is valid as a type, sigh:
       (nil? v)))
 
+
+(defn map-entry [k v]
+  (clojure.lang.MapEntry. k v))
+
+;; map-entry? is in clojure.core
+

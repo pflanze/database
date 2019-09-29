@@ -8,7 +8,8 @@
                                 => either
                                 inc!
                                 keyword->string
-                                type?]]
+                                type?
+                                map-entry]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
     (:import [java.io ByteArrayInputStream
@@ -181,13 +182,6 @@
 
 (defn reference-path [the-store ref]
   (hash-path the-store (:hash ref)))
-
-
-
-(defn map-entry [k v]
-  (clojure.lang.MapEntry. k v))
-
-;; map-entry? is in clojure.core
 
 
 
