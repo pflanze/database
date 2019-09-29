@@ -9,7 +9,11 @@
                 rb:rkeys rb:rvals rb:seq rb:rseq
                 ->TreeCtx TreeCtx-dostore TreeCtx-donotstore
                 defn* GET PUT GET-deeply]]
-              [database.store :refer [open-store store= reference]]
+              [database.store
+               :refer
+               [
+                open-store store= reference
+                store-statistics store-statistics-reset!]]
               [chj.debug :refer :all]))
 
 
@@ -227,9 +231,19 @@
     (t (TreeCtx-dostore _tree-ctx))
 
     ;; get a value via the cache:
-    (let [_tree-ctx (->TreeCtx (open-store "db")
-                               false)]
-      (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
-           [:black nil [12 "12"] nil]))))
+    (def _tree-ctx2
+         (let [_tree-ctx (->TreeCtx (open-store "db")
+                                    false)]
+           (is= (store-statistics (:the-store _tree-ctx))
+                [0 0])
+           (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
+                [:black nil [12 "12"] nil])
+           (is= (store-statistics (:the-store _tree-ctx))
+                [0 1])
+           (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
+                [:black nil [12 "12"] nil])
+           (is= (store-statistics (:the-store _tree-ctx))
+                [1 1])
+           _tree-ctx))))
 
 

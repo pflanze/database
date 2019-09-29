@@ -6,6 +6,7 @@
                                 error
                                 ->* ->>*
                                 => either
+                                inc!
                                 keyword->string]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
@@ -69,7 +70,9 @@
   ([n]
    (make-array Reference n)))
 
+
 (def store-get-from-disk)
+
 (defn referenceCache-get [the-store ref]
   (assert (reference? ref))
   ;; ref always has its possibly-val unset when we get here.
@@ -79,20 +82,22 @@
         i (bit-and (:hashlong ref) (dec siz))]
     (letfn [(slowpath []
                       (let [v (store-get-from-disk the-store ref)]
-                        (swap! (:possibly-val ref)
-                               (fn [_] ;; xx set only
-                                   v))
+                        (reset! (:possibly-val ref) v)
                         ;; XX now, we did set the possibly-val and
                         ;; have a stron ref now, which leaks forever,
                         ;; this still needs dealing with.
+                        (inc! (:referenceCache-misses the-store))
                         (aset a i ref)
                         v))]
            (if-let [r (aget a i)]
                    (if (reference= r ref)
-                       @(:possibly-val r)
-                       ;;^ XX but now will have a copy of a reference
-                       ;;  with also a hard pointer
-                       ;;  XX actually set possibly-val in ref 
+                       (do
+                           (inc! (:referenceCache-hits the-store))
+                           @(:possibly-val r)
+                         ;;^ XX but now will have a copy of a reference
+                         ;;  with also a hard pointer
+                         ;;  XX actually set possibly-val in ref 
+                         )
                        (slowpath))
                    (slowpath)))))
 
@@ -112,15 +117,25 @@
 ;; Store
 
 
-;;  [String (Atom (Array Reference))]
-(defrecord Store [path cache])
+;; [String (Atom (Array Reference)) (Maybe (Atom Long)) (Maybe (Atom Long))]
+(defrecord Store [path cache referenceCache-hits referenceCache-misses])
 
 (def Store? (class-predicate-for Store))
 
 (defn open-store [path]
   (mkdir path)
-  (->Store path (atom (make-referenceCache))))
+  (->Store path
+           (atom (make-referenceCache))
+           ;; xx make these optional, for speed-up:
+           (atom 0)
+           (atom 0)))
 
+(defn store-statistics [the-store]
+  [@(:referenceCache-hits the-store) @(:referenceCache-misses the-store)])
+
+(defn store-statistics-reset! [the-store]
+  (reset! (:referenceCache-hits the-store) 0)
+  (reset! (:referenceCache-misses the-store) 0))
 
 
 (defn chop [s]
@@ -328,9 +343,7 @@
   (assert (reference? ref))
   (let [a (:possibly-val ref)  possibly-val @a]
     (if (identical? possibly-val no-val)
-        ;; xx only need to set it, don't care about old val, faster op?
-        (swap! a (fn [_]
-                     (referenceCache-get the-store ref)))
+        (reset! a (referenceCache-get the-store ref))
         possibly-val)))
 
 
