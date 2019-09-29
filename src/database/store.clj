@@ -39,18 +39,18 @@
 
 (def no-val (gensym 'noval))
 
-(defn reference
+(defn reference*
   ([str long]
-   (reference str long no-val))
+   (reference* str long no-val))
   ([str long val]
    (assert (string? str))
    (assert (int? long)) ;; `int?` accepts longs and there's no `long?` predicate?
    (->Reference str long (atom val))))
 
 (def string->hashlong)
-(defn reference-1 [str]
-  "reference constructor for deserialisation (safer, don't allow multiple arguments)"
-  (reference str (string->hashlong str)))
+(defn reference [str]
+  "reference constructor for deserialisation (separate from reference*, do not allow multiple arguments to be safe for deserialisation)"
+  (reference* str (string->hashlong str)))
 
 (def reference? (class-predicate-for Reference))
 
@@ -246,7 +246,7 @@
                        (list 'map-entry (key v) (val v))))
  (type-transformer database.store.Reference
                    'reference
-                   reference-1
+                   reference
                    (fn [v]
                        (list 'reference (:hash v))))
  (type-transformer clojure.lang.PersistentVector
@@ -308,7 +308,7 @@
         path
         (hash-path the-store hashstr)]
     (spit-frugally path s)
-    (reference hashstr hashlong obj)))
+    (reference* hashstr hashlong obj)))
 
 
 (defn store-get-from-disk [the-store ref]
