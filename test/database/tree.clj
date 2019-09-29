@@ -222,7 +222,7 @@
     (t (TreeCtx-dostore _*))
 
     ;; get a value via the cache:
-    (def _tree-ctx2
+    (def _*2
          (let [_* (->TreeCtx (open-store "db")
                                     false)]
            (is= (store-statistics (:the-store _*))
