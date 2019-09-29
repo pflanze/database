@@ -74,7 +74,7 @@
   (let [
         a @(:cache the-store)
         siz (count a)
-        i (bit-and (:hashint ref) (dec siz))]
+        i (bit-and (:hashlong ref) (dec siz))]
     (letfn [(slowpath []
                       (let [v (store-get-from-disk the-store ref)]
                         (aset a i v)
