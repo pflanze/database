@@ -26,7 +26,7 @@
 
 (defn* GET [x]
   (if (s/reference? x)
-      (let [v (s/store-get (:the-store _tree-ctx) x)]
+      (let [v (s/store-get (:the-store _*) x)]
         (assert (not (s/reference? v)))
         v)
       x))
@@ -55,13 +55,13 @@
 (defn* node)
 (defn _node
   "Make a new tree node"
-  ([_tree-ctx color a kv b count]
+  ([_* color a kv b count]
    (=> redblack-keyword? color)
    (=> node-branch? a)
    (=> map-entry? kv)
    (=> node-branch? b)
    [color a kv b count])
-  ([_tree-ctx color a kv b]
+  ([_* color a kv b]
    (inc! node-count-count)
    (let [count (+ (node-count (GET a))
                   1
@@ -69,8 +69,8 @@
      (node color a kv b count))))
 
 (defn node* [color]
-  (fn ([_tree-ctx a kv b count] (node color a kv b count))
-      ([_tree-ctx a kv b] (node color a kv b))))
+  (fn ([_* a kv b count] (node color a kv b count))
+      ([_* a kv b] (node color a kv b))))
 
 (def* red (node* :red))
 (def* black (node* :black))
@@ -98,10 +98,10 @@
       (short-string? v)))
 
 (defn* PUT [x]
-  (if (=> boolean? (:store? _tree-ctx))
+  (if (=> boolean? (:store? _*))
       (if (not-needs-PUT? x)
           x
-          (s/store-put (:the-store _tree-ctx) x))
+          (s/store-put (:the-store _*) x))
       x))
 
 (defn* PUT-deeply [v]
@@ -231,7 +231,7 @@
 (defn* rb:ref)
 (defn _rb:ref
   "Check if the key is present and return value or a default"
-  ([_tree-ctx tree k not-found]
+  ([_* tree k not-found]
    (loop [tree tree k k]
          (match (GET tree)
                 nil not-found
@@ -239,12 +239,12 @@
                                -1 (recur a k)
                                1 (recur b k)
                                0 (val kv)))))
-  ([_tree-ctx tree k]
-   (_rb:ref _tree-ctx tree k nil)))
+  ([_* tree k]
+   (_rb:ref _* tree k nil)))
 
 
 (defn rb-reducer-lazy [cons access v0 direction]
-  (fn [_tree-ctx tree]
+  (fn [_* tree]
       (letfn [(rec [tree tail]
                    (lazy-seq
                     (match (GET tree)
@@ -258,7 +258,7 @@
 
 ;; copy-paste except for eliminated lazy-seq
 (defn rb-reducer [cons access v0 direction]
-  (fn [_tree-ctx tree]
+  (fn [_* tree]
       (letfn [(rec [tree tail]
                    (match (GET tree)
                           nil tail

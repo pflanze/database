@@ -20,7 +20,7 @@
               [chj.debug :refer :all]))
 
 
-(def _tree-ctx (->TreeCtx (open-store "db")
+(def _* (->TreeCtx (open-store "db")
                           false))
 
 (deftest basics
@@ -77,7 +77,7 @@
 (defn* random-node)
 (defn _random-node
   ;; XX doesn't currently enforce red vs black rules!
-  ([_tree-ctx ncases kmin kmax force-black?]
+  ([_* ncases kmin kmax force-black?]
    (if (< kmin kmax)
        (let [i (rand-int ncases) k (random-k kmin kmax)]
          (if (< i 2)
@@ -90,9 +90,9 @@
                    (random-node 10 (inc k) kmax)))
              nil))
        nil))
-  ([_tree-ctx ncases kmin kmax]
+  ([_* ncases kmin kmax]
    (random-node ncases kmin kmax false))
-  ([_tree-ctx ]
+  ([_* ]
    (random-node 3 10 40 false)))
 
 (defn* random-node-other-than [seen kmin kmax force-black?]
@@ -144,7 +144,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (_random-node (TreeCtx-donotstore _tree-ctx))]
+           (let [node (_random-node (TreeCtx-donotstore _*))]
              (is (t-bal node)))))
 
 (deftest t-balance-old
@@ -155,7 +155,7 @@
   ;; show that t-balance behaves the same for in-memory trees as for
   ;; saved ones.
   (dotimes [rep n]
-           (let [node (_random-node (TreeCtx-dostore _tree-ctx))]
+           (let [node (_random-node (TreeCtx-dostore _*))]
              (is (= (rb:balance (GET-deeply node))
                     (GET-deeply (rb:balance node)))))))
 
@@ -169,7 +169,7 @@
        (range from to)))
 
 (deftest skewed
-  (let [t (fn [_tree-ctx]
+  (let [t (fn [_*]
               (def t3 (seq->rb (range-kvs 10 20)))
               (is= (rb:depth t3)
                    5)
@@ -218,23 +218,23 @@
                    [499 "499"])
               
               )]
-    (t (TreeCtx-donotstore _tree-ctx))
-    (t (TreeCtx-dostore _tree-ctx))
+    (t (TreeCtx-donotstore _*))
+    (t (TreeCtx-dostore _*))
 
     ;; get a value via the cache:
     (def _tree-ctx2
-         (let [_tree-ctx (->TreeCtx (open-store "db")
+         (let [_* (->TreeCtx (open-store "db")
                                     false)]
-           (is= (store-statistics (:the-store _tree-ctx))
+           (is= (store-statistics (:the-store _*))
                 [0 0])
            (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
                 [:black nil [12 "12"] nil])
-           (is= (store-statistics (:the-store _tree-ctx))
+           (is= (store-statistics (:the-store _*))
                 [0 1])
            (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
                 [:black nil [12 "12"] nil])
-           (is= (store-statistics (:the-store _tree-ctx))
+           (is= (store-statistics (:the-store _*))
                 [1 1])
-           _tree-ctx))))
+           _*))))
 
 
