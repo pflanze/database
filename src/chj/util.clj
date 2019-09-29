@@ -21,7 +21,7 @@
   `(let [p# ~pred v# ~expr]
      (if (p# v#)
          v#
-         (predicate-error p# v#))))
+         (predicate-error '~pred v#))))
 
 
 (defmacro ->* [& forms]
