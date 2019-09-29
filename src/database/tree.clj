@@ -58,11 +58,16 @@ not clear how to do it in Clojure for the author."
         x*)))
 
 
+(defn short-string? [v]
+  (and (string? v)
+       (<= (count v) 160)))
+
 (defn not-needs-PUT? [v]
   (or (nil? v)
       (boolean? v)
       (number? v)
-      (s/reference? v)))
+      (s/reference? v)
+      (short-string? v)))
 
 (defn* PUT [x]
   (if (=> boolean? (:store? _tree-ctx))
