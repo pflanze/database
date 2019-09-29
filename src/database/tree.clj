@@ -216,7 +216,7 @@ not clear how to do it in Clojure for the author."
    (_rb:ref _tree-ctx tree k nil)))
 
 
-(defn rb-iterator [cons access v0 direction]
+(defn rb-reducer-lazy [cons access v0 direction]
   (fn [_tree-ctx tree]
       (letfn [(rec [tree tail]
                    (lazy-seq
@@ -227,24 +227,35 @@ not clear how to do it in Clojure for the author."
                                                 (rec (direction b a) tail))))))]
              (rec tree v0))))
 
+;; copy-paste except for eliminated lazy-seq
+(defn rb-reducer [cons access v0 direction]
+  (fn [_tree-ctx tree]
+      (letfn [(rec [tree tail]
+                   (match (GET tree)
+                          nil tail
+                          [_ a y b] (rec (direction a b)
+                                         (cons (access y)
+                                               (rec (direction b a) tail)))))]
+             (rec tree v0))))
+
 (defn forward-select [a b] a)
 (defn backward-select [a b] b)
 
 (defn* rb:keys)
 (defn* rb:vals)
-(def _rb:keys (rb-iterator cons key '() forward-select))
-(def _rb:vals (rb-iterator cons val '() forward-select))
+(def _rb:keys (rb-reducer-lazy cons key '() forward-select))
+(def _rb:vals (rb-reducer-lazy cons val '() forward-select))
 
 (defn* rb:rkeys)
 (defn* rb:rvals)
-(def _rb:rkeys (rb-iterator cons key '() backward-select))
-(def _rb:rvals (rb-iterator cons val '() backward-select))
+(def _rb:rkeys (rb-reducer-lazy cons key '() backward-select))
+(def _rb:rvals (rb-reducer-lazy cons val '() backward-select))
 
 
 (defn* rb:seq)
-(def _rb:seq (rb-iterator cons identity '() forward-select))
+(def _rb:seq (rb-reducer-lazy cons identity '() forward-select))
 (defn* rb:rseq)
-(def _rb:rseq (rb-iterator cons identity '() backward-select))
+(def _rb:rseq (rb-reducer-lazy cons identity '() backward-select))
 
 
 (defn* rb:depth [tree]
@@ -256,16 +267,11 @@ not clear how to do it in Clojure for the author."
          (inc (max (rb:depth a)
                    (rb:depth b)))))
 
-(defn* rb:count [tree]
-  "The number of associations in the tree"
-  (match (GET tree)
-         nil
-         0
-         [color a kv b]
-         (+ (rb:count a)
-            1
-            (rb:count b))))
-
+;; xx bad, needs to walk the whole database; carry count in nodes
+(defn* rb:count)
+(def _rb:count
+     "The number of associations in the tree"
+     (rb-reducer + (fn [kv] 1) 0 forward-select))
 
 
 ;; (defn dissoc [tree x])
