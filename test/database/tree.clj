@@ -1,6 +1,7 @@
 (ns test.database.tree
     (:require [clojure.test :refer :all]
               [chj.test :refer [is* is=]]
+              [chj.threading :refer [defn*]]
               [database.tree
                :refer
                [
@@ -9,7 +10,7 @@
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
                 ->TreeCtx TreeCtx-dostore TreeCtx-donotstore
-                defn* GET PUT GET-deeply]]
+                GET PUT GET-deeply]]
               [database.store
                :refer
                [
