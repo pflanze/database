@@ -70,7 +70,7 @@
 (def store-get-from-disk)
 (defn referenceCache-get [the-store ref]
   (let [
-        a (:cache the-store)
+        a @(:cache the-store)
         siz (count a)
         i (bit-and (:hashint ref) (dec siz))]
     (letfn [(slowpath []
@@ -100,6 +100,8 @@
 
 ;; Store
 
+
+;;  [String (Atom (Array Reference))]
 (defrecord Store [path cache])
 
 (def Store? (class-predicate-for Store))
