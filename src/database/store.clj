@@ -72,19 +72,27 @@
 (def store-get-from-disk)
 (defn referenceCache-get [the-store ref]
   (assert (reference? ref))
+  ;; ref always has its possibly-val unset when we get here.
   (let [
         a @(:cache the-store)
         siz (count a)
         i (bit-and (:hashlong ref) (dec siz))]
     (letfn [(slowpath []
                       (let [v (store-get-from-disk the-store ref)]
-                        (aset a i v)
+                        (swap! (:possibly-val ref)
+                               (fn [_] ;; xx set only
+                                   v))
+                        ;; XX now, we did set the possibly-val and
+                        ;; have a stron ref now, which leaks forever,
+                        ;; this still needs dealing with.
+                        (aset a i ref)
                         v))]
            (if-let [r (aget a i)]
                    (if (reference= r ref)
                        @(:possibly-val r)
                        ;;^ XX but now will have a copy of a reference
                        ;;  with also a hard pointer
+                       ;;  XX actually set possibly-val in ref 
                        (slowpath))
                    (slowpath)))))
 
