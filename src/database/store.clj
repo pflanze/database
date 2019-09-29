@@ -7,7 +7,8 @@
                                 ->* ->>*
                                 => either
                                 inc!
-                                keyword->string]]
+                                keyword->string
+                                type?]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
     (:import [java.io ByteArrayInputStream
@@ -188,11 +189,6 @@
 
 ;; map-entry? is in clojure.core
 
-
-(defn type? [v]
-  (or (= (type v) java.lang.Class)
-      ;; (type nil) is nil, so nil is valid as a type, sigh:
-      (nil? v)))
 
 
 (defrecord TypeTransformer [type constructorname constructor to-code])

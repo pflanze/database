@@ -126,3 +126,9 @@ evenly dividable by n"
         (or ~@(map (fn [case]
                        `(~case ~V))
                    cases)))))
+
+(defn type? [v]
+  (or (= (type v) java.lang.Class)
+      ;; (type nil) is nil, so nil is valid as a type, sigh:
+      (nil? v)))
+
