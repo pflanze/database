@@ -118,3 +118,11 @@ evenly dividable by n"
 (defn dec! [a]
   (swap! a inc))
 
+
+(defmacro either [& cases]
+  (with-gensym
+   V
+   `(fn [~V]
+        (or ~@(map (fn [case]
+                       `(~case ~V))
+                   cases)))))
