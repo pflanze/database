@@ -42,6 +42,23 @@ not clear how to do it in Clojure for the author."
                 `(defn ~_nam ~(vector-cons '_tree-ctx binds)
                    ~@body))))))
 
+(defmacro def* 
+  "Companion for `defn*`, for cases where `nam` is to be defined from
+an expression; it just creates the wrapper macro, and depends on the
+expression returning a function that takes `_tree-ctx` as the first
+argument."
+  ([nam maybe-docstring expr]
+   (let [_nam (symbol (str "_" nam))]
+    
+     `(do (defmacro ~nam [& args#]
+            ~@(if maybe-docstring (list maybe-docstring) '())
+            (cons* (syntax-quote ~_nam) '~'_tree-ctx args#))
+          (def ~_nam
+               ~@(if maybe-docstring (list maybe-docstring) '())
+               ~expr))))
+  ([nam expr]
+   `(def* ~nam nil ~expr)))
+
 
 
 (defn* GET [x]
@@ -246,21 +263,15 @@ not clear how to do it in Clojure for the author."
 (defn forward-select [a b] a)
 (defn backward-select [a b] b)
 
-(defn* rb:keys)
-(defn* rb:vals)
-(def _rb:keys (rb-reducer-lazy cons key '() forward-select))
-(def _rb:vals (rb-reducer-lazy cons val '() forward-select))
+(def* rb:keys (rb-reducer-lazy cons key '() forward-select))
+(def* rb:vals (rb-reducer-lazy cons val '() forward-select))
 
-(defn* rb:rkeys)
-(defn* rb:rvals)
-(def _rb:rkeys (rb-reducer-lazy cons key '() backward-select))
-(def _rb:rvals (rb-reducer-lazy cons val '() backward-select))
+(def* rb:rkeys (rb-reducer-lazy cons key '() backward-select))
+(def* rb:rvals (rb-reducer-lazy cons val '() backward-select))
 
 
-(defn* rb:seq)
-(def _rb:seq (rb-reducer-lazy cons identity '() forward-select))
-(defn* rb:rseq)
-(def _rb:rseq (rb-reducer-lazy cons identity '() backward-select))
+(def* rb:seq (rb-reducer-lazy cons identity '() forward-select))
+(def* rb:rseq (rb-reducer-lazy cons identity '() backward-select))
 
 
 (defn* rb:depth [tree]
@@ -273,10 +284,9 @@ not clear how to do it in Clojure for the author."
                    (rb:depth b)))))
 
 ;; xx bad, needs to walk the whole database; carry count in nodes
-(defn* rb:count)
-(def _rb:count
-     "The number of associations in the tree"
-     (rb-reducer + (fn [kv] 1) 0 forward-select))
+(def* rb:count
+  "The number of associations in the tree"
+  (rb-reducer + (fn [kv] 1) 0 forward-select))
 
 
 ;; (defn dissoc [tree x])
