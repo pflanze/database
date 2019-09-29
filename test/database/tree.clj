@@ -178,18 +178,26 @@
               (def t3 (seq->rb (range-kvs 10 20)))
               (is= (rb:depth t3)
                    5)
+              (is= (rb:count t3)
+                   10)
 
               (def t4 (rb:into t3 (reverse (range-kvs 40 50))))
               (is= (rb:depth t4)
                    6)
+              (is= (rb:count t4)
+                   20)
 
               (def t5 (rb:into t4 (range-kvs 40 500)))
               (is= (rb:depth t5)
                    12)
+              (is= (rb:count t5)
+                   470)
 
               (def t5b (rb:into t5 (range-kvs 40 500)))
               (is= (rb:depth t5)
                    12)
+              (is= (rb:count t5b)
+                   470)
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
               (is (store= t5 t5c))
