@@ -5,6 +5,7 @@
                                 for-each
                                 error
                                 ->* ->>*
+                                =>
                                 keyword->string]]
               [chj.table :refer [entries->table table-add table-ref]])
     (:import [java.io ByteArrayInputStream
@@ -69,6 +70,7 @@
 
 (def store-get-from-disk)
 (defn referenceCache-get [the-store ref]
+  (assert (reference? ref))
   (let [
         a @(:cache the-store)
         siz (count a)
