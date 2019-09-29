@@ -6,6 +6,19 @@
 (defmacro defn* [nam & binds&body]
   "'Automatic' context threading.
 
+This works like a dynamic variable, but with a few differences:
+
+ - those functions making use of the dynamic variable are defined via
+   def* or defn* (visual cue)
+
+ - if they are called in a place where there's no _*, a compile time
+   error results (broken thread; -> less error prone)
+
+ - closures and `lazy-seq` capture the value of _* at creation
+   time (-> code remains pure)
+
+Details:
+
 Like defn (but only supports the single-definition form), but
 defines the function with nam prefixed with an underscore and an added
 first `_*` argument, and defines a macro under the name nam
