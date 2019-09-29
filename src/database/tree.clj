@@ -216,21 +216,35 @@ not clear how to do it in Clojure for the author."
    (_rb:ref _tree-ctx tree k nil)))
 
 
-(defn rb-iterator [cons access v0]
+(defn rb-iterator [cons access v0 direction]
   (fn [_tree-ctx tree]
       (letfn [(rec [tree tail]
                    (lazy-seq
                     (match (GET tree)
                            nil tail
-                           [_ a y b] (rec a
+                           [_ a y b] (rec (direction a b)
                                           (cons (access y)
-                                                (rec b tail))))))]
+                                                (rec (direction b a) tail))))))]
              (rec tree v0))))
+
+(defn forward-select [a b] a)
+(defn backward-select [a b] b)
 
 (defn* rb:keys)
 (defn* rb:vals)
-(def _rb:keys (rb-iterator cons key '()))
-(def _rb:vals (rb-iterator cons val '()))
+(def _rb:keys (rb-iterator cons key '() forward-select))
+(def _rb:vals (rb-iterator cons val '() forward-select))
+
+(defn* rb:rkeys)
+(defn* rb:rvals)
+(def _rb:rkeys (rb-iterator cons key '() backward-select))
+(def _rb:rvals (rb-iterator cons val '() backward-select))
+
+
+(defn* rb:seq)
+(def _rb:seq (rb-iterator cons identity '() forward-select))
+(defn* rb:rseq)
+(def _rb:rseq (rb-iterator cons identity '() backward-select))
 
 
 (defn* rb:depth [tree]

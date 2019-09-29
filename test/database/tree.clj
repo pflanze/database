@@ -6,6 +6,7 @@
                [
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
+                rb:rkeys rb:rvals rb:seq rb:rseq
                 ->TreeCtx TreeCtx-dostore TreeCtx-donotstore
                 defn* GET PUT GET-deeply]]
               [database.store :refer [open-store store=]]
@@ -191,6 +192,28 @@
                    12)
 
               (def t5c (rb:into t5 (reverse (range-kvs 40 500))))
-              (is (store= t5 t5c)))]
+              (is (store= t5 t5c))
+
+              (is= (take 5 (rb:keys t5))
+                   '(10 11 12 13 14))
+              (is= (take 5 (rb:rkeys t5))
+                   '(499 498 497 496 495))
+
+              (is= (take 2 (rb:vals t5))
+                   '("10" "11"))
+              (is= (take 3 (rb:rvals t5))
+                   '("499" "498" "497"))
+
+              (is= (take 5 (rb:seq t5))
+                   '([10 "10"] [11 "11"] [12 "12"] [13 "13"] [14 "14"]))
+              (is= (take 3 (rb:rseq t5))
+                   '([499 "499"] [498 "498"] [497 "497"]))
+              (is= (take 3 (keys (rb:rseq t5)))
+                   '(499 498 497))
+
+              (is= (last (rb:seq t5))
+                   [499 "499"])
+              
+              )]
     (t (TreeCtx-donotstore _tree-ctx))
     (t (TreeCtx-dostore _tree-ctx))))
