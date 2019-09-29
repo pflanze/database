@@ -5,9 +5,10 @@
                                 for-each
                                 error
                                 ->* ->>*
-                                =>
+                                => either
                                 keyword->string]]
-              [chj.table :refer [entries->table table-add table-ref]])
+              [chj.table :refer [entries->table table-add table-ref]]
+              [clojure.test :refer [function?]])
     (:import [java.io ByteArrayInputStream
                       ByteArrayOutputStream
                       ObjectOutputStream
@@ -165,11 +166,20 @@
 ;; map-entry? is in clojure.core
 
 
+(defn type? [v]
+  (= (type v) java.lang.Class))
+
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
 
 (defn type-transformer [type constructorname constructor to-code]
-  (TypeTransformer. type constructorname constructor to-code))
+  (->TypeTransformer (=> type? type)
+                     (=> (either symbol? string?) constructorname)
+                     ;; ^ don't allow nil so that indexing
+                     ;; constructorname works (without having to add
+                     ;; functionality to ignore nil values)
+                     (=> (either function? nil?) constructor)
+                     (=> function? to-code)))
 
 (def TypeTransformer? (class-predicate-for TypeTransformer))
 
@@ -188,8 +198,8 @@
 
 (defn identityTransformer [typ]
   (type-transformer typ
-                    false
-                    false
+                    (str typ)
+                    nil
                     identity))
 
 (declare type-transformer:to-code)
@@ -199,8 +209,8 @@
 
 (add-transformers!
  (type-transformer clojure.lang.LongRange
-                   false  ;; 'range
-                   false  ;; range
+                   "range"
+                   nil
                    ;; (fn [v]
                    ;;     (list 'range
                    ;;           (.first v)
@@ -209,8 +219,8 @@
                    ;;           (.step v)))
                    serialization-not-supported)
  (type-transformer clojure.lang.LazySeq
-                   false ;; 'LazySeq
-                   false
+                   "LazySeq"
+                   nil
                    serialization-not-supported)
  (type-transformer clojure.lang.PersistentList
                    'list
