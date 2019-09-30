@@ -262,9 +262,9 @@
                        (rb:balance (node color a kv n* cnt*)))
                      0
                      tree)))
-        [_ a y b]
+        [_ a y b cnt]
         (ins (GET tree))]
-    (PUT-deeply (black a y b))))
+    (PUT-deeply (black a y b cnt))))
 
 (defn* rb:conj [tree [k v]]
   (rb:add tree k v))
