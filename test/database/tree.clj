@@ -248,10 +248,12 @@
             (range nelt))))
 
 (defn test-count [nrep]
-  (dotimes [rep nrep]
-           (let [t (random-rb)]
-             (is= (count (rb:seq t))
-                  (rb:count t)))))
+  (let [old @database.tree/node-count-count]
+    (dotimes [rep nrep]
+             (let [t (random-rb)]
+               (is= (count (rb:seq t))
+                    (rb:count t))))
+    (- @database.tree/node-count-count old)))
 
 (deftest t-count
   (test-count 20))
