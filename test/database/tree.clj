@@ -5,7 +5,7 @@
               [database.tree
                :refer
                [
-                node node-count red black
+                node* node-count red black
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -84,11 +84,11 @@
             (let [
                   a (random-node* 10 kmin k false)
                   b (random-node* 10 (inc k) kmax false)]
-              (node (if (and (= i 0) (not force-black?)) :red :black)
-                    (PUT a)
-                    (map-entry k (str k))
-                    (PUT b)
-                    (+ (node-count a) 1 (node-count b))))
+              (node* (if (and (= i 0) (not force-black?)) :red :black)
+                     (PUT a)
+                     (map-entry k (str k))
+                     (PUT b)
+                     (+ (node-count a) 1 (node-count b))))
             nil))
       nil))
 

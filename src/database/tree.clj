@@ -52,28 +52,34 @@
 
 (def node-branch? (either nil? node? s/reference?))
 
-(defn* node)
-(defn _node
+(defn* node* [color a kv b count]
+  "The full node constructor, no need to calculate count (and hence no
+need to force a or b into memory"
+  (=> redblack-keyword? color)
+  (=> node-branch? a)
+  (=> map-entry? kv)
+  (=> node-branch? b)
+  [color a kv b count])
+
+(defn* node [color a kv b]
   "Make a new tree node"
-  ([_* color a kv b count]
-   (=> redblack-keyword? color)
-   (=> node-branch? a)
-   (=> map-entry? kv)
-   (=> node-branch? b)
-   [color a kv b count])
-  ([_* color a kv b]
-   (inc! node-count-count)
-   (let [count (+ (node-count (GET a))
-                  1
-                  (node-count (GET b)))]
-     (node color a kv b count))))
+  (inc! node-count-count)
+  (let [count (+ (node-count (GET a))
+                 1
+                 (node-count (GET b)))]
+    (node* color a kv b count)))
 
-(defn node* [color]
-  (fn ([_* a kv b count] (node color a kv b count))
-      ([_* a kv b] (node color a kv b))))
+(defn node_color [color]
+  (fn [_* a kv b] (node color a kv b)))
 
-(def* red (node* :red))
-(def* black (node* :black))
+(def* red (node_color :red))
+(def* black (node_color :black))
+
+(defn node_color* [color]
+  (fn [_* a kv b count] (node* color a kv b count)))
+
+(def* red* (node_color* :red))
+(def* black* (node_color* :black))
 
 
 
@@ -81,7 +87,7 @@
   (let [x* (GET x)]
     (match x*
            [color a kv b cnt]
-           (node color (GET-deeply a) kv (GET-deeply b) cnt)
+           (node* color (GET-deeply a) kv (GET-deeply b) cnt)
            :else
            x*)))
 
@@ -113,11 +119,11 @@
              (PUT (if (and (not-needs-PUT? a)
                            (not-needs-PUT? b))
                       v
-                      (node color
-                            (PUT-deeply a)
-                            x
-                            (PUT-deeply b)
-                            cnt)))
+                      (node* color
+                             (PUT-deeply a)
+                             x
+                             (PUT-deeply b)
+                             cnt)))
 
              :else
              (PUT v))))
@@ -147,50 +153,51 @@
                  (GET N1)
                  otherwise
                  (fn [N1cnt]
-                     (match (GET M1)
-                            [:red N2 z2 M2 M1cnt]
-                            ;; [:black a  x [:red [:red b y c] z  d]]
-                            ;; tree    N1 z M1    N2           z2 M2
-                            (let [N2' (GET N2)]
-                              (match N2'
-                                     [:red b y c N2cnt]
-                                     ;;    a  b c d  x y z
-                                     ;;(cont N1 b c M2 z y z2)
-                                     ;; Matched:
-                                     ;; (black N1
-                                     ;;        z
-                                     ;;        (red (red b y c N2cnt)
-                                     ;;             z2
-                                     ;;             M2
-                                     ;;             M1cnt)
-                                     ;;        treecnt)
-                                     (let [
-                                           bcnt (node-count (GET b))
-                                           N1zbcnt (+ N1cnt 1 bcnt)
-                                           ]
-                                       (red (black N1 z b N1zbcnt)
-                                            y
-                                            (black c z2 M2 (- treecnt N1zbcnt 1))
-                                            treecnt))
+                     (match
+                      (GET M1)
+                      [:red N2 z2 M2 M1cnt]
+                      ;; [:black a  x [:red [:red b y c] z  d]]
+                      ;; tree    N1 z M1    N2           z2 M2
+                      (let [N2' (GET N2)]
+                        (match N2'
+                               [:red b y c N2cnt]
+                               ;;    a  b c d  x y z
+                               ;;(cont N1 b c M2 z y z2)
+                               ;; Matched:
+                               ;; (black N1
+                               ;;        z
+                               ;;        (red (red b y c N2cnt)
+                               ;;             z2
+                               ;;             M2
+                               ;;             M1cnt)
+                               ;;        treecnt)
+                               (let [
+                                     bcnt (node-count (GET b))
+                                     N1zbcnt (+ N1cnt 1 bcnt)
+                                     ]
+                                 (red* (black* N1 z b N1zbcnt)
+                                       y
+                                       (black* c z2 M2 (- treecnt N1zbcnt 1))
+                                       treecnt))
                                    
-                                     :else
-                                     (match (GET M2)
-                                            [:red c z3 d _]
-                                            ;; [:black a  x [:red b  y  [:red c z  d]]]
-                                            ;; tree    N1 z M1    N2 z2 M2    c z2 d
-                                            ;;(cont N1 N2 c d z z2 z3)
-                                            (let [
-                                                  N2cnt (node-count N2')
-                                                  N1N2cnt (+ N1cnt N2cnt 1)]
-                                              (red (black N1 z N2 N1N2cnt)
-                                                   z2
-                                                   (black c z3 d (- treecnt N1N2cnt 1))
-                                                   treecnt))
+                               :else
+                               (match (GET M2)
+                                      [:red c z3 d _]
+                                      ;; [:black a  x [:red b  y  [:red c z  d]]]
+                                      ;; tree    N1 z M1    N2 z2 M2    c z2 d
+                                      ;;(cont N1 N2 c d z z2 z3)
+                                      (let [
+                                            N2cnt (node-count N2')
+                                            N1N2cnt (+ N1cnt N2cnt 1)]
+                                        (red* (black* N1 z N2 N1N2cnt)
+                                              z2
+                                              (black* c z3 d (- treecnt N1N2cnt 1))
+                                              treecnt))
 
-                                            :else
-                                            tree)))
-                            :else
-                            tree))]
+                                      :else
+                                      tree)))
+                      :else
+                      tree))]
              (match N1'
                     [:red N2 y M2 N1cnt]
                     (let [N2' (GET N2)]
@@ -199,10 +206,10 @@
                              [:red a x b N2cnt]
                              ;;    a b c  d
                              ;;(cont a b M2 M1 x y z)
-                             (red (black a x b N2cnt)
-                                  y
-                                  (black M2 z M1 (- treecnt N2cnt 1))
-                                  treecnt)
+                             (red* (black* a x b N2cnt)
+                                   y
+                                   (black* M2 z M1 (- treecnt N2cnt 1))
+                                   treecnt)
 
                              :else
                              (match (GET M2)
@@ -223,10 +230,10 @@
                                           bcnt (node-count (GET b))
                                           ccnt (- M2cnt bcnt 1)
                                           ]
-                                      (red (black N2 y b (+ N2cnt bcnt 1))
-                                           y2
-                                           (black c z M1 (+ ccnt M1cnt 1))
-                                           treecnt))
+                                      (red* (black* N2 y b (+ N2cnt bcnt 1))
+                                            y2
+                                            (black* c z M1 (+ ccnt M1cnt 1))
+                                            treecnt))
 
                                     :else
                                     (otherwise N1cnt))))
@@ -241,7 +248,7 @@
             (match tree
 
                    nil
-                   (red nil (clojure.lang.MapEntry. k v) nil 1)
+                   (red* nil (clojure.lang.MapEntry. k v) nil 1)
 
                    [color a kv b cnt]
                    (case (compare k (key kv))
@@ -252,19 +259,19 @@
                            cnt* (+ cnt (- (node-count n*)
                                           (node-count n')))]
                        ;; xx why is cnt* not simply (inc cnt) ?
-                       (rb:balance (node color n* kv b cnt*)))
+                       (rb:balance (node* color n* kv b cnt*)))
                      1
                      (let [
                            n' (GET b)
                            n* (ins n')
                            cnt* (+ cnt (- (node-count n*)
                                           (node-count n')))]
-                       (rb:balance (node color a kv n* cnt*)))
+                       (rb:balance (node* color a kv n* cnt*)))
                      0
                      tree)))
         [_ a y b cnt]
         (ins (GET tree))]
-    (PUT-deeply (black a y b cnt))))
+    (PUT-deeply (black* a y b cnt))))
 
 (defn* rb:conj [tree [k v]]
   (rb:add tree k v))
