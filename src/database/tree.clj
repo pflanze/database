@@ -187,19 +187,32 @@
 (defn* rb:add [tree k v]
   (let [ins
         (fn ins [tree]
-            (let [tree (GET tree)]
-              (match tree
+            (match tree
 
-                     nil
-                     (red nil (clojure.lang.MapEntry. k v) nil)
+                   nil
+                   (red nil (clojure.lang.MapEntry. k v) nil 1)
 
-                     [color a kv b _]
-                     (case (compare k (key kv))
-                       -1 (rb:balance (node color (ins a) kv b))
-                       1 (rb:balance (node color a kv (ins b)))
-                       0 tree))))
+                   [color a kv b cnt]
+                   (case (compare k (key kv))
+                     -1
+                     (let [
+                           n' (GET a)
+                           n* (ins n')
+                           cnt* (+ cnt (- (node-count n*)
+                                          (node-count n')))]
+                       ;; xx why is cnt* not simply (inc cnt) ?
+                       (rb:balance (node color n* kv b cnt*)))
+                     1
+                     (let [
+                           n' (GET b)
+                           n* (ins n')
+                           cnt* (+ cnt (- (node-count n*)
+                                          (node-count n')))]
+                       (rb:balance (node color a kv n* cnt*)))
+                     0
+                     tree)))
         [_ a y b]
-        (ins tree)]
+        (ins (GET tree))]
     (PUT-deeply (black a y b))))
 
 (defn* rb:conj [tree [k v]]
