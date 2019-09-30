@@ -5,7 +5,7 @@
               [database.tree
                :refer
                [
-                node red black
+                node node-count red black
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -74,22 +74,28 @@
   "random key in given range, excl. kmax"
   (+ kmin (rand-int (- kmax kmin))))
 
+
+(defn* random-node* [ncases kmin kmax force-black?]
+  "Does not PUT the immediate layer (does the deeper ones)"
+  ;; XX doesn't currently enforce red vs black rules!
+  (if (< kmin kmax)
+      (let [i (rand-int ncases) k (random-k kmin kmax)]
+        (if (< i 2)
+            (let [
+                  a (random-node* 10 kmin k false)
+                  b (random-node* 10 (inc k) kmax false)]
+              (node (if (and (= i 0) (not force-black?)) :red :black)
+                    (PUT a)
+                    (map-entry k (str k))
+                    (PUT b)
+                    (+ (node-count a) 1 (node-count b))))
+            nil))
+      nil))
+
 (defn* random-node)
 (defn _random-node
-  ;; XX doesn't currently enforce red vs black rules!
   ([_* ncases kmin kmax force-black?]
-   (if (< kmin kmax)
-       (let [i (rand-int ncases) k (random-k kmin kmax)]
-         (if (< i 2)
-             (PUT (node
-                   (if (and (= i 0) (not force-black?))
-                       :red
-                       :black)
-                   (random-node 10 kmin k)
-                   (map-entry k (str k))
-                   (random-node 10 (inc k) kmax)))
-             nil))
-       nil))
+   (PUT (random-node* ncases kmin kmax force-black?)))
   ([_* ncases kmin kmax]
    (random-node ncases kmin kmax false))
   ([_* ]
