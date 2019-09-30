@@ -151,13 +151,22 @@
                             (match (GET N2)
                                    [:red b y c _]
                                    ;;    a  b c d  x y z
-                                   (cont N1 b c M2 z y z2)
+                                   ;;(cont N1 b c M2 z y z2)
+                                   (red (black N1 z b)
+                                        y
+                                        (black c z2 M2))
+
+                                   
                                    :else
                                    (match (GET M2)
                                           [:red c z3 d _]
                                           ;; [:black a  x [:red b  y  [:red c z  d]]]
                                           ;; tree    N1 z M1    N2 z2 M2    c z2 d
-                                          (cont N1 N2 c d z z2 z3)
+                                          ;;(cont N1 N2 c d z z2 z3)
+                                          (red (black N1 z N2)
+                                               z2
+                                               (black c z3 d))
+
                                           :else
                                           tree))
                             :else
@@ -168,7 +177,10 @@
                            ;; [:black [:red [:red a x b] y c] z d]
                            [:red a x b _]
                            ;;    a b c  d
-                           (cont a b M2 M1 x y z)
+                           ;;(cont a b M2 M1 x y z)
+                           (red (black a x b)
+                                y
+                                (black M2 z M1))
 
                            :else
                            (match (GET M2)
@@ -176,7 +188,11 @@
                                   ;; [:black [:red a  x  [:red b y  c]] z d]
                                   ;; tree    N1    N2 y  M2    b y2 c   z M1
                                   ;;    a  b c d  x y  z
-                                  (cont N2 b c M1 y y2 z)
+                                  ;;(cont N2 b c M1 y y2 z)
+                                  (red (black N2 y b)
+                                       y2
+                                       (black c z M1))
+
                                   :else
                                   (otherwise)))
                     :else
