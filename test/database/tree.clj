@@ -230,17 +230,18 @@
     ;; get a value via the cache:
     (def _*2
          (let [_* (->TreeCtx (open-store "db")
-                                    false)]
-           (is= (store-statistics (:the-store _*))
-                [0 0])
-           (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
-                [:black nil [12 "12"] nil])
-           (is= (store-statistics (:the-store _*))
-                [0 1])
-           (is= (GET (reference "4h2jpHsL_nNsOoIYQWeVwsFd509R0bOK2P+6TPmST3g"))
-                [:black nil [12 "12"] nil])
-           (is= (store-statistics (:the-store _*))
-                [1 1])
+                             false)]
+           (letfn [(tst []
+                        (is= (GET (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14"))
+                             (black nil (map-entry 12 "12") nil)))]
+                  (is= (store-statistics (:the-store _*))
+                       [0 0])
+                  (tst)
+                  (is= (store-statistics (:the-store _*))
+                       [0 1])
+                  (tst)
+                  (is= (store-statistics (:the-store _*))
+                       [1 1]))
            _*))))
 
 
