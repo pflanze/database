@@ -21,7 +21,7 @@
 
 
 (def _* (->TreeCtx (open-store "db")
-                          false))
+                   false))
 
 (deftest basics
   
@@ -236,5 +236,24 @@
            (is= (store-statistics (:the-store _*))
                 [1 1])
            _*))))
+
+
+
+(defn random-rb []
+  (let [nelt (rand-int 200)]
+    (reduce (fn [t _]
+                (let [i (rand-int 750)]
+                  (rb:add t i (str i))))
+            nil
+            (range nelt))))
+
+(defn test-count [nrep]
+  (dotimes [rep nrep]
+           (let [t (random-rb)]
+             (is= (count (rb:seq t))
+                  (rb:count t)))))
+
+(deftest t-count
+  (test-count 20))
 
 
