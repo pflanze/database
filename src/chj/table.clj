@@ -11,8 +11,7 @@
         (conj idx [val row]))))
 
 (defn entries->unique-index [entries key]
-  (reduce (fn [idx row]
-              (unique-index-add idx key row))
+  (reduce #(unique-index-add %1 key %2)
           {}
           entries))
 
