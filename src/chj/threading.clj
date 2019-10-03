@@ -1,60 +1,61 @@
 (ns chj.threading
     (:require [clojure.tools.reader :refer [syntax-quote]]
-              [chj.util :refer [vector-cons cons*]]))
+              [chj.util :refer [vector-cons cons* => either maybe]]))
 
 
-(defmacro defn* [nam & binds&body]
-  "'Automatic' context threading.
+(defmacro defn* [pred nam & binds&body]
+  "Implicit context threading.
 
-This works like a dynamic variable, but with a few differences:
+Writing `defn* foo?` instead of `defn` adds a first argument named
+`this` to the defined function (for which foo? needs to be true), and
+defines the function with an underscore prepended (`_nam`), and
+defines a macro named `nam` which, when invoked, prepends `this` from
+the current environment to the argument list.
 
- - those functions making use of the dynamic variable are defined via
-   def* or defn* (visual cue)
+This propagates `this` as an implicit variable similar to a dynamic
+variable, but with a few differences:
 
- - if they are called in a place where there's no _*, a compile time
-   error results (broken thread; -> less error prone)
+ - using defn* adds an explicit visual cue that a \"dynamic\" context
+   is involved, and calling the defined function (macro) without a
+   `this` in context results in a compile time error (it means there's
+   a broken thread -> less error prone)
 
- - closures and `lazy-seq` capture the value of _* at creation
-   time (-> code remains pure)
-
-Details:
-
-Like defn (but only supports the single-definition form), but
-defines the function with nam prefixed with an underscore and an added
-first `_*` argument, and defines a macro under the name nam
-which adds `_*` (unhygienically) as the first argument.
-
-Note: as with anything that uses unhygienic bindings, this feels
-slightly dirty. It's straight-forward enough for the limited scope of
-intended use, though, and a clean approach (gensym and then code
-walker? Communicate between the macros via dynamic variables, or a
-compile time context somehow?) would be more difficult to pull off /
-not clear how to do it in Clojure for the author."
+ - closures and `lazy-seq` capture the value of `this` at creation
+   time (-> functions remain pure)
+"
+  (=> symbol? nam)
 
   (let [_nam (symbol (str "_" nam))]
     
     `(do (defmacro ~nam [& args#]
            ;; `~~_nam and `~'~_nam don't work, thus use org.clojure/tools.reader
-           (cons* (syntax-quote ~_nam) '~'_* args#))
+           (cons* (syntax-quote ~_nam) '~'this args#))
          ~(if (seq binds&body)
               (let [[binds & body] binds&body]
-                `(defn ~_nam ~(vector-cons '_* binds)
+                `(defn ~_nam ~(vector-cons 'this binds)
+                   ~@(if pred
+                         `((=> ~pred ~'this)))
                    ~@body))))))
 
 (defmacro def* 
   "Companion for `defn*`, for cases where `nam` is to be defined from
 an expression; it just creates the wrapper macro, and depends on the
-expression returning a function that takes `_*` as the first
-argument."
-  ([nam maybe-docstring expr]
+expression returning a function that takes `this` as the first
+argument.
+
+Note: def* ignores the pred argument, it's purely documentary."
+  ([pred nam maybe-docstring expr]
+   (=> symbol? nam)
+   (=> (maybe string?) maybe-docstring)
    (let [_nam (symbol (str "_" nam))]
     
      `(do (defmacro ~nam [& args#]
             ~@(if maybe-docstring (list maybe-docstring) '())
-            (cons* (syntax-quote ~_nam) '~'_* args#))
+            (cons* (syntax-quote ~_nam) '~'this args#))
           (def ~_nam
                ~@(if maybe-docstring (list maybe-docstring) '())
                ~expr))))
-  ([nam expr]
-   `(def* ~nam nil ~expr)))
+  ([pred nam expr]
+   (=> symbol? nam)
+   `(def* ~pred ~nam nil ~expr)))
 
