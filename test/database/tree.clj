@@ -15,13 +15,13 @@
                [
                 open-store store= reference
                 store-statistics store-statistics-reset!
-                ->TreeCtx TreeCtx-dostore TreeCtx-donotstore]]
+                ->DatabaseCtx DatabaseCtx-dostore DatabaseCtx-donotstore]]
               [chj.util :refer [map-entry]]
               [chj.debug :refer :all]))
 
 
-(def _* (->TreeCtx (open-store "db")
-                   false))
+(def _* (->DatabaseCtx (open-store "db")
+                       false))
 
 (deftest basics
   
@@ -150,7 +150,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (_random-node (TreeCtx-donotstore _*))]
+           (let [node (_random-node (DatabaseCtx-donotstore _*))]
              (is (t-bal node)))))
 
 (deftest t-balance-old
@@ -161,7 +161,7 @@
   ;; show that t-balance behaves the same for in-memory trees as for
   ;; saved ones.
   (dotimes [rep n]
-           (let [node (_random-node (TreeCtx-dostore _*))]
+           (let [node (_random-node (DatabaseCtx-dostore _*))]
              (is (= (rb:balance (GET-deeply node))
                     (GET-deeply (rb:balance node)))))))
 
@@ -224,13 +224,13 @@
                    [499 "499"])
               
               )]
-    (t (TreeCtx-donotstore _*))
-    (t (TreeCtx-dostore _*))
+    (t (DatabaseCtx-donotstore _*))
+    (t (DatabaseCtx-dostore _*))
 
     ;; get a value via the cache:
     (def _*2
-         (let [_* (->TreeCtx (open-store "db")
-                             false)]
+         (let [_* (->DatabaseCtx (open-store "db")
+                                 false)]
            (letfn [(tst []
                         (is= (GET (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14"))
                              (black nil (map-entry 12 "12") nil)))]

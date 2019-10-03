@@ -139,22 +139,22 @@
   (reset! (:referenceCache-misses the-store) 0))
 
 
-;; TreeCtx
+;; DatabaseCtx
 
 ;; Unlike Store which doesn't change for a particular backing store
 ;; (except for the cache, but that doesn't violate purity) and has no
 ;; (even functional) setters (and should be singletons per argument,
-;; xx not enforced currently), TreeCtx carries additional information
+;; xx not enforced currently), DatabaseCtx carries additional information
 ;; that changes dynamically (i.e. it has setters).
 
-(defrecord TreeCtx [the-store store?])
+(defrecord DatabaseCtx [the-store store?])
 
-(defn TreeCtx-store?-set [c b]
-  (->TreeCtx (:the-store c)
-             b))
+(defn DatabaseCtx-store?-set [c b]
+  (->DatabaseCtx (:the-store c)
+                 b))
 
-(defn TreeCtx-donotstore [c] (TreeCtx-store?-set c false))
-(defn TreeCtx-dostore [c] (TreeCtx-store?-set c true))
+(defn DatabaseCtx-donotstore [c] (DatabaseCtx-store?-set c false))
+(defn DatabaseCtx-dostore [c] (DatabaseCtx-store?-set c true))
 
 
 
