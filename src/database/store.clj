@@ -76,30 +76,29 @@
 (def store-get-from-disk)
 
 (defn referenceCache-get [the-store ref]
+  "Looks up the given reference in the cache, if not found, puts ref into the cache and loads the vale from disk, if found reads the value from the cached ref, in either case stores the value into ref. Returns the value."
   (assert (reference? ref))
   ;; ref always has its possibly-val unset when we get here.
   (let [
         a @(:cache the-store)
         siz (count a)
-        i (bit-and (:hashlong ref) (dec siz))]
+        i (bit-and (:hashlong ref) (dec siz))
+        *ref (:possibly-val ref)]
     (letfn [(slowpath []
                       (let [v (store-get-from-disk the-store ref)]
-                        (reset! (:possibly-val ref) v)
-                        ;; XX now, we did set the possibly-val and
-                        ;; have a stron ref now, which leaks forever,
-                        ;; this still needs dealing with.
-                        (inc! (:referenceCache-misses the-store))
+                        (reset! *ref v)
                         (aset a i ref)
+                        (inc! (:referenceCache-misses the-store))
                         v))]
            (if-let [r (aget a i)]
                    (if (reference= r ref)
-                       (do
-                           (inc! (:referenceCache-hits the-store))
-                           @(:possibly-val r)
+                       (let [v @(:possibly-val r)]
+                         (inc! (:referenceCache-hits the-store))
+                         (reset! *ref v)
                          ;;^ XX but now will have a copy of a reference
                          ;;  with also a hard pointer
                          ;;  XX actually set possibly-val in ref 
-                         )
+                         v)
                        (slowpath))
                    (slowpath)))))
 
@@ -353,7 +352,7 @@
   (assert (reference? ref))
   (let [a (:possibly-val ref)  possibly-val @a]
     (if (identical? possibly-val no-val)
-        (reset! a (referenceCache-get the-store ref))
+        (referenceCache-get the-store ref)
         possibly-val)))
 
 
