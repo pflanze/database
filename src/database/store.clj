@@ -148,6 +148,8 @@
 
 (defrecord DatabaseCtx [the-store store?])
 
+(def DatabaseCtx? (class-predicate-for DatabaseCtx))
+
 (defn DatabaseCtx-store?-set [c b]
   (->DatabaseCtx (:the-store c)
                  b))
@@ -155,6 +157,8 @@
 (defn DatabaseCtx-donotstore [c] (DatabaseCtx-store?-set c false))
 (defn DatabaseCtx-dostore [c] (DatabaseCtx-store?-set c true))
 
+(defn* DatabaseCtx-path []
+  (:path (:the-store (=> DatabaseCtx? _*))))
 
 
 ;; Object names (hashing)
