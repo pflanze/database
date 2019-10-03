@@ -13,16 +13,6 @@
               [chj.util :refer [=> inc! either]]))
 
 
-(defrecord TreeCtx [the-store store?])
-
-(defn TreeCtx-store?-set [c b]
-  (->TreeCtx (:the-store c)
-             b))
-
-(defn TreeCtx-donotstore [c] (TreeCtx-store?-set c false))
-(defn TreeCtx-dostore [c] (TreeCtx-store?-set c true))
-
-
 
 (defn* GET [x]
   (if (s/reference? x)

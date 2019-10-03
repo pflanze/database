@@ -9,13 +9,13 @@
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
-                ->TreeCtx TreeCtx-dostore TreeCtx-donotstore
                 GET PUT GET-deeply]]
               [database.store
                :refer
                [
                 open-store store= reference
-                           store-statistics store-statistics-reset!]]
+                store-statistics store-statistics-reset!
+                ->TreeCtx TreeCtx-dostore TreeCtx-donotstore]]
               [chj.util :refer [map-entry]]
               [chj.debug :refer :all]))
 

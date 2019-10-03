@@ -118,7 +118,6 @@
 
 ;; Store
 
-
 ;; [String (Atom (Array Reference)) (Maybe (Atom Long)) (Maybe (Atom Long))]
 (defrecord Store [path cache referenceCache-hits referenceCache-misses])
 
@@ -139,6 +138,27 @@
   (reset! (:referenceCache-hits the-store) 0)
   (reset! (:referenceCache-misses the-store) 0))
 
+
+;; TreeCtx
+
+;; Unlike Store which doesn't change for a particular backing store
+;; (except for the cache, but that doesn't violate purity) and has no
+;; (even functional) setters (and should be singletons per argument,
+;; xx not enforced currently), TreeCtx carries additional information
+;; that changes dynamically (i.e. it has setters).
+
+(defrecord TreeCtx [the-store store?])
+
+(defn TreeCtx-store?-set [c b]
+  (->TreeCtx (:the-store c)
+             b))
+
+(defn TreeCtx-donotstore [c] (TreeCtx-store?-set c false))
+(defn TreeCtx-dostore [c] (TreeCtx-store?-set c true))
+
+
+
+;; Object names (hashing)
 
 (defn chop [s]
   (.substring s 0 (dec (.length s))))
