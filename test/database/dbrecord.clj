@@ -14,8 +14,8 @@
 
 (deftest reversibility
 
-  (def s (s/open-store "db"))
+  (def this (s/open-store "db"))
 
-  (is= (->> (pair 10 (pair 20 30)) (s/store-put s) (s/store-get s))
+  (is= (->> (pair 10 (pair 20 30)) s/store-put s/store-get)
        (pair 10 (pair 20 30))))
 

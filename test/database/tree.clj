@@ -15,13 +15,13 @@
                [
                 open-store store= reference
                 store-statistics store-statistics-reset!
-                ->DatabaseCtx DatabaseCtx-dostore DatabaseCtx-donotstore]]
+                Database? ->Database database-dostore database-donotstore]]
               [chj.util :refer [map-entry]]
               [chj.debug :refer :all]))
 
 
-(def _* (->DatabaseCtx (open-store "db")
-                       false))
+(def this (->Database (open-store "db")
+                      false))
 
 (deftest basics
   
@@ -75,7 +75,7 @@
   (+ kmin (rand-int (- kmax kmin))))
 
 
-(defn* random-node* [ncases kmin kmax force-black?]
+(defn* Database? random-node* [ncases kmin kmax force-black?]
   "Does not PUT the immediate layer (does the deeper ones)"
   ;; XX doesn't currently enforce red vs black rules!
   (if (< kmin kmax)
@@ -92,16 +92,16 @@
             nil))
       nil))
 
-(defn* random-node)
+(defn* Database? random-node)
 (defn _random-node
-  ([_* ncases kmin kmax force-black?]
+  ([this ncases kmin kmax force-black?]
    (PUT (random-node* ncases kmin kmax force-black?)))
-  ([_* ncases kmin kmax]
+  ([this ncases kmin kmax]
    (random-node ncases kmin kmax false))
-  ([_* ]
+  ([this]
    (random-node 3 10 40 false)))
 
-(defn* random-node-other-than [seen kmin kmax force-black?]
+(defn* Database? random-node-other-than [seen kmin kmax force-black?]
   (loop []
         (let [n (random-node 3 kmin kmax force-black?)]
           (if (contains? seen n)
@@ -109,7 +109,7 @@
               n))))
 
 
-(defn* test-balance [n]
+(defn* Database? test-balance [n]
   (dotimes [rep n]
            (let [
                  ;; a and b must be black (or nil) to avoid
@@ -150,7 +150,7 @@
   ;; show that t-balance and t-balance-old behave the same way for
   ;; in-memory trees
   (dotimes [rep n]
-           (let [node (_random-node (DatabaseCtx-donotstore _*))]
+           (let [node (_random-node (database-donotstore))]
              (is (t-bal node)))))
 
 (deftest t-balance-old
@@ -161,7 +161,7 @@
   ;; show that t-balance behaves the same for in-memory trees as for
   ;; saved ones.
   (dotimes [rep n]
-           (let [node (_random-node (DatabaseCtx-dostore _*))]
+           (let [node (_random-node (database-dostore))]
              (is (= (rb:balance (GET-deeply node))
                     (GET-deeply (rb:balance node)))))))
 
@@ -175,7 +175,7 @@
        (range from to)))
 
 (deftest skewed
-  (let [t (fn [_*]
+  (let [t (fn [this]
               (def t3 (seq->rb (range-kvs 10 20)))
               (is= (rb:depth t3)
                    5)
@@ -224,25 +224,26 @@
                    [499 "499"])
               
               )]
-    (t (DatabaseCtx-donotstore _*))
-    (t (DatabaseCtx-dostore _*))
+    (t (database-donotstore))
+    (t (database-dostore))
 
     ;; get a value via the cache:
-    (def _*2
-         (let [_* (->DatabaseCtx (open-store "db")
-                                 false)]
+    (def this2
+         (let [this (->Database (open-store "db")
+                                false)]
            (letfn [(tst []
-                        (is= (GET (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14"))
+                        (is= (GET (let [this (:the-store this)]
+                                    (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14")))
                              (black nil (map-entry 12 "12") nil)))]
-                  (is= (store-statistics (:the-store _*))
+                  (is= (store-statistics (:the-store this))
                        [0 0])
                   (tst)
-                  (is= (store-statistics (:the-store _*))
+                  (is= (store-statistics (:the-store this))
                        [0 1])
                   (tst)
-                  (is= (store-statistics (:the-store _*))
+                  (is= (store-statistics (:the-store this))
                        [1 1]))
-           _*))))
+           this))))
 
 
 

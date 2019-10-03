@@ -14,9 +14,9 @@
 
 
 
-(defn* GET [x]
+(defn* s/Database? GET [x]
   (if (s/reference? x)
-      (let [v (s/store-get (:the-store _*) x)]
+      (let [v (s/_store-get (:the-store this) x)]
         (assert (not (s/reference? v)))
         v)
       x))
@@ -42,7 +42,7 @@
 
 (def node-branch? (either nil? node? s/reference?))
 
-(defn* node* [color a kv b count]
+(defn* s/Database? node* [color a kv b count]
   "The full node constructor, no need to calculate count (and hence no
 need to force a or b into memory"
   (=> redblack-keyword? color)
@@ -51,7 +51,7 @@ need to force a or b into memory"
   (=> node-branch? b)
   [color a kv b count])
 
-(defn* node [color a kv b]
+(defn* s/Database? node [color a kv b]
   "Make a new tree node"
   (inc! node-count-count)
   (let [count (+ (node-count (GET a))
@@ -60,20 +60,20 @@ need to force a or b into memory"
     (node* color a kv b count)))
 
 (defn node_color [color]
-  (fn [_* a kv b] (node color a kv b)))
+  (fn [this a kv b] (node color a kv b)))
 
-(def* red (node_color :red))
-(def* black (node_color :black))
+(def* s/Database? red (node_color :red))
+(def* s/Database? black (node_color :black))
 
 (defn node_color* [color]
-  (fn [_* a kv b count] (node* color a kv b count)))
+  (fn [this a kv b count] (node* color a kv b count)))
 
-(def* red* (node_color* :red))
-(def* black* (node_color* :black))
+(def* s/Database? red* (node_color* :red))
+(def* s/Database? black* (node_color* :black))
 
 
 
-(defn* GET-deeply [x]
+(defn* s/Database? GET-deeply [x]
   (let [x* (GET x)]
     (match x*
            [color a kv b cnt]
@@ -93,14 +93,14 @@ need to force a or b into memory"
       (s/reference? v)
       (short-string? v)))
 
-(defn* PUT [x]
-  (if (=> boolean? (:store? _*))
+(defn* s/Database? PUT [x]
+  (if (=> boolean? (:store? this))
       (if (not-needs-PUT? x)
           x
-          (s/store-put (:the-store _*) x))
+          (s/_store-put (:the-store this) x))
       x))
 
-(defn* PUT-deeply [v]
+(defn* s/Database? PUT-deeply [v]
   "This one is really specific to rb tree"
   (if (not-needs-PUT? v)
       v
@@ -119,7 +119,7 @@ need to force a or b into memory"
              (PUT v))))
 
 
-(defn* rb:balance-old [tree]
+(defn* s/Database? rb:balance-old [tree]
   (match tree
          (:or [:black [:red [:red a x b _] y c _] z d _]
               [:black [:red a x [:red b y c _] _] z d _]
@@ -130,7 +130,7 @@ need to force a or b into memory"
               (black c z d))
          :else tree))
 
-(defn* rb:balance [tree]
+(defn* s/Database? rb:balance [tree]
   (let [cont
         (fn [a b c d x y z]
             (red (black a x b)
@@ -232,7 +232,7 @@ need to force a or b into memory"
            :else tree)))
 
 
-(defn* rb:add [tree k v]
+(defn* s/Database? rb:add [tree k v]
   (let [ins
         (fn ins [tree]
             (match tree
@@ -263,20 +263,20 @@ need to force a or b into memory"
         (ins (GET tree))]
     (PUT-deeply (black* a y b cnt))))
 
-(defn* rb:conj [tree [k v]]
+(defn* s/Database? rb:conj [tree [k v]]
   (rb:add tree k v))
 
 
 
 ;; XX name, or how ?
-(defn* rb:into [tree pairs]
+(defn* s/Database? rb:into [tree pairs]
   (reduce #(rb:conj %1 %2) tree pairs))
 
-(defn* seq->rb [s]
+(defn* s/Database? seq->rb [s]
   (rb:into nil s))
 
 
-(defn* rb:contains?
+(defn* s/Database? rb:contains?
   [tree k]
   ;; XX does this work as doc-string?
   "Check if the key is present"
@@ -289,10 +289,10 @@ need to force a or b into memory"
                               0 true))))
 
 
-(defn* rb:ref)
+(defn* s/Database? rb:ref)
 (defn _rb:ref
   "Check if the key is present and return value or a default"
-  ([_* tree k not-found]
+  ([this tree k not-found]
    (loop [tree tree k k]
          (match (GET tree)
                 nil not-found
@@ -300,12 +300,12 @@ need to force a or b into memory"
                                -1 (recur a k)
                                1 (recur b k)
                                0 (val kv)))))
-  ([_* tree k]
-   (_rb:ref _* tree k nil)))
+  ([this tree k]
+   (_rb:ref this tree k nil)))
 
 
 (defn rb-reducer-lazy [cons access v0 direction]
-  (fn [_* tree]
+  (fn [this tree]
       (letfn [(rec [tree tail]
                    (lazy-seq
                     (match (GET tree)
@@ -319,7 +319,7 @@ need to force a or b into memory"
 
 ;; copy-paste except for eliminated lazy-seq
 (defn rb-reducer [cons access v0 direction]
-  (fn [_* tree]
+  (fn [this tree]
       (letfn [(rec [tree tail]
                    (match (GET tree)
                           nil tail
@@ -332,18 +332,18 @@ need to force a or b into memory"
 (defn forward-select [a b] a)
 (defn backward-select [a b] b)
 
-(def* rb:keys (rb-reducer-lazy cons key '() forward-select))
-(def* rb:vals (rb-reducer-lazy cons val '() forward-select))
+(def* s/Database? rb:keys (rb-reducer-lazy cons key '() forward-select))
+(def* s/Database? rb:vals (rb-reducer-lazy cons val '() forward-select))
 
-(def* rb:rkeys (rb-reducer-lazy cons key '() backward-select))
-(def* rb:rvals (rb-reducer-lazy cons val '() backward-select))
-
-
-(def* rb:seq (rb-reducer-lazy cons identity '() forward-select))
-(def* rb:rseq (rb-reducer-lazy cons identity '() backward-select))
+(def* s/Database? rb:rkeys (rb-reducer-lazy cons key '() backward-select))
+(def* s/Database? rb:rvals (rb-reducer-lazy cons val '() backward-select))
 
 
-(defn* rb:depth [tree]
+(def* s/Database? rb:seq (rb-reducer-lazy cons identity '() forward-select))
+(def* s/Database? rb:rseq (rb-reducer-lazy cons identity '() backward-select))
+
+
+(defn* s/Database? rb:depth [tree]
   "The max depth of the tree, for debugging purposes"
   (match (GET tree)
          nil
@@ -352,7 +352,7 @@ need to force a or b into memory"
          (inc (max (rb:depth a)
                    (rb:depth b)))))
 
-(defn* rb:count [tree]
+(defn* s/Database? rb:count [tree]
   "The number of associations in the tree"
   (node-count (GET tree)))
 

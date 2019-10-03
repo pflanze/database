@@ -37,13 +37,13 @@
 
 (deftest unbroken-symbol-serialisation
 
-  (def s (s/open-store "db"))
+  (def this (s/open-store "db"))
 
   (is*
 
-   (= (->> (symbol "a b") (s/store-put s) (s/store-get s) type)
+   (= (->> (symbol "a b") s/store-put s/store-get type)
       clojure.lang.Symbol)
 
-   (= (->> (symbol "a b") (s/store-put s) (s/store-get s))
+   (= (->> (symbol "a b") s/store-put s/store-get)
       (symbol "a b"))))
 
