@@ -10,6 +10,7 @@
                                 keyword->string
                                 type?
                                 map-entry]]
+              [chj.threading :refer [defn* def*]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
     (:import [java.io ByteArrayInputStream
@@ -33,6 +34,13 @@
 ;; The cache is just randomized
 
 
+;; Store
+
+;; [String (Atom (Array Reference)) (Maybe (Atom Long)) (Maybe (Atom Long))]
+(defrecord Store [path cache cache-hits cache-misses])
+
+(def Store? (class-predicate-for Store))
+
 
 ;; Reference
 
@@ -51,9 +59,22 @@
    (->Reference str long (atom val))))
 
 (def string->hashlong)
-(defn reference [str]
+
+(defn* Store? cache-maybe-get-reference [hashstr hashlong]
+  "Try to retrieve an existing reference instance from the cache. Returns nill if not found."
+  (let [
+        a @(:cache this)
+        siz (count a)
+        i (bit-and hashlong (dec siz))]
+    (if-let [r (aget a i)]
+            (if (= (:hash r) hashstr)
+                r))))
+
+(defn* Store? reference [hashstr]
   "reference constructor for deserialisation (separate from reference*, do not allow multiple arguments to be safe for deserialisation)"
-  (reference* str (string->hashlong str)))
+  (let [hashlong (string->hashlong hashstr)]
+    (or (cache-maybe-get-reference hashstr hashlong)
+        (reference* hashstr hashlong))))
 
 (def reference? (class-predicate-for Reference))
 
@@ -64,36 +85,36 @@
 ;; Reference cache
 
 ;; xx
-(def referenceCache-start-size 16) ;; items, must be a power of 2
+(def cache-start-size 16) ;; items, must be a power of 2
 
-(defn make-referenceCache
+(defn make-cache
   ([]
-   (make-referenceCache referenceCache-start-size))
+   (make-cache cache-start-size))
   ([n]
    (make-array Reference n)))
 
 
-(def store-get-from-disk)
+(def _store-get-from-disk) ;; xx avoidable? re-order code
 
-(defn referenceCache-get [the-store ref]
+(defn* Store? cache-get [ref]
   "Looks up the given reference in the cache, if not found, puts ref into the cache and loads the vale from disk, if found reads the value from the cached ref, in either case stores the value into ref. Returns the value."
   (=> reference? ref)
   ;; ref always has its possibly-val unset when we get here.
   (let [
-        a @(:cache the-store)
+        a @(:cache this)
         siz (count a)
         i (bit-and (:hashlong ref) (dec siz))
         *ref (:possibly-val ref)]
     (letfn [(slowpath []
-                      (let [v (store-get-from-disk the-store ref)]
+                      (let [v (_store-get-from-disk this ref)]
                         (reset! *ref v)
                         (aset a i ref)
-                        (inc! (:referenceCache-misses the-store))
+                        (inc! (:cache-misses this))
                         v))]
            (if-let [r (aget a i)]
                    (if (reference= r ref)
                        (let [v @(:possibly-val r)]
-                         (inc! (:referenceCache-hits the-store))
+                         (inc! (:cache-hits this))
                          (reset! *ref v)
                          ;;^ XX but now will have a copy of a reference
                          ;;  with also a hard pointer
@@ -102,8 +123,9 @@
                        (slowpath))
                    (slowpath)))))
 
+
 ;; xx
-;; (defn referenceCache-resize-up [v]
+;; (defn cache-resize-up [v]
 ;;   (let [
 ;;         siz (count v)
 ;;         siz* (bit-shift-left siz 1)
@@ -115,27 +137,22 @@
 
 
 
-;; Store
-
-;; [String (Atom (Array Reference)) (Maybe (Atom Long)) (Maybe (Atom Long))]
-(defrecord Store [path cache referenceCache-hits referenceCache-misses])
-
-(def Store? (class-predicate-for Store))
+;; More Store
 
 (defn open-store [path]
   (mkdir path)
   (->Store path
-           (atom (make-referenceCache))
+           (atom (make-cache))
            ;; xx make these optional, for speed-up:
            (atom 0)
            (atom 0)))
 
 (defn store-statistics [the-store]
-  [@(:referenceCache-hits the-store) @(:referenceCache-misses the-store)])
+  [@(:cache-hits the-store) @(:cache-misses the-store)])
 
 (defn store-statistics-reset! [the-store]
-  (reset! (:referenceCache-hits the-store) 0)
-  (reset! (:referenceCache-misses the-store) 0))
+  (reset! (:cache-hits the-store) 0)
+  (reset! (:cache-misses the-store) 0))
 
 
 ;; DatabaseCtx
@@ -146,19 +163,19 @@
 ;; xx not enforced currently), DatabaseCtx carries additional information
 ;; that changes dynamically (i.e. it has setters).
 
-(defrecord DatabaseCtx [the-store store?])
+(defrecord Database [the-store store?])
 
-(def DatabaseCtx? (class-predicate-for DatabaseCtx))
+(def Database? (class-predicate-for Database))
 
-(defn DatabaseCtx-store?-set [c b]
-  (->DatabaseCtx (:the-store c)
-                 b))
+(defn* Database? database-store?-set [b]
+  (->Database (:the-store this)
+              b))
 
-(defn DatabaseCtx-donotstore [c] (DatabaseCtx-store?-set c false))
-(defn DatabaseCtx-dostore [c] (DatabaseCtx-store?-set c true))
+(defn* Database? database-donotstore [] (database-store?-set false))
+(defn* Database? database-dostore [] (database-store?-set true))
 
-(defn* DatabaseCtx-path []
-  (:path (:the-store (=> DatabaseCtx? _*))))
+(defn* Database? path []
+  (-> this :the-store :path))
 
 
 ;; Object names (hashing)
@@ -199,24 +216,42 @@
 
 
 
-(defn hash-path [the-store hash]
-  (assert (Store? the-store))
-  (str (:path the-store) "/" hash))
+(defn* Store? hash-path [hash]
+  (str (:path this) "/" hash))
 
-(defn reference-path [the-store ref]
-  (hash-path the-store (:hash ref)))
+(defn* Store? reference-path [ref]
+  (hash-path (:hash ref)))
 
 
 
 (defrecord TypeTransformer [type constructorname constructor to-code])
 
-(defn type-transformer [type constructorname constructor to-code]
+(defn type-transformer [type constructorname constructor-1 to-code]
   (->TypeTransformer (=> type? type)
                      (=> (either symbol? string?) constructorname)
                      ;; ^ don't allow nil so that indexing
                      ;; constructorname works (without having to add
                      ;; functionality to ignore nil values)
-                     (=> (either function? nil?) constructor)
+                     (do
+                         (=> (either function? nil?) constructor-1)
+                         (fn [this args]
+                             "Ignoring Database"
+                             (apply constructor-1 args)))
+                     (=> function? to-code)))
+
+(defn type-transformer* [type constructorname constructor-2 to-code]
+  "Same as type-transformer except that the data constructor gets access to the Database."
+  ;; stupid mostly-COPY-PASTE
+  (->TypeTransformer (=> type? type)
+                     (=> (either symbol? string?) constructorname)
+                     ;; ^ don't allow nil so that indexing
+                     ;; constructorname works (without having to add
+                     ;; functionality to ignore nil values)
+                     (do
+                         (=> (either function? nil?) constructor-2)
+                         (fn [this args]
+                             "Passing on Database"
+                             (apply constructor-2 this args)))
                      (=> function? to-code)))
 
 (def TypeTransformer? (class-predicate-for TypeTransformer))
@@ -280,11 +315,11 @@
                    map-entry
                    (fn [v]
                        (list 'map-entry (key v) (val v))))
- (type-transformer database.store.Reference
-                   'reference
-                   reference
-                   (fn [v]
-                       (list 'reference (:hash v))))
+ (type-transformer* database.store.Reference
+                    'reference
+                    _reference
+                    (fn [v]
+                        (list 'reference (:hash v))))
  (type-transformer clojure.lang.PersistentVector
                    'vector
                    vector
@@ -308,30 +343,30 @@
 (defn serialize [obj]
   (pr-str (type-transformer:to-code obj)))
 
-(defn deserialize:eval [e]
-  (cond (list? e)
-        (apply (:constructor
-                (table-ref @type-transformers :constructorname (first e)))
-               (map deserialize:eval (rest e)))
-        true
-        e))
+(defn* Store? deserialize:eval [e]
+  (if (list? e)
+      ((:constructor
+        (table-ref @type-transformers :constructorname (first e)))
+       this
+       (map #(deserialize:eval %) (rest e)))
+      e))
 
-(def deserialize-stream
-     (->* java.io.InputStreamReader.
-          java.io.PushbackReader.
+(defn* Store? deserialize-stream [s]
+  (-> s
+      java.io.InputStreamReader.
+      java.io.PushbackReader.
       read ;; XX security
-          deserialize:eval))
+      deserialize:eval))
 
-(def deserialize-string
-     (->* .getBytes ByteArrayInputStream. deserialize-stream))
+(defn* Store? deserialize-string [s]
+  (-> s .getBytes ByteArrayInputStream. deserialize-stream))
 
-(defn deserialize-file [path]
+(defn* Store? deserialize-file [path]
   (with-open [in (FileInputStream. path)]
              (deserialize-stream in)))
 
 
-(defn store-put [the-store obj]
-  (assert (Store? the-store))
+(defn* Store? store-put [obj]
   (assert (not (Store? obj)))
   (let [s
         (serialize obj)
@@ -342,22 +377,21 @@
         hashlong
         (rawhash->hashlong rawhash)
         path
-        (hash-path the-store hashstr)]
+        (hash-path hashstr)]
     (spit-frugally path s)
     ;; XX  put into cache!
     (reference* hashstr hashlong obj)))
 
 
-(defn store-get-from-disk [the-store ref]
-  (-> (reference-path the-store ref)
+(defn* Store? store-get-from-disk [ref]
+  (-> (reference-path ref)
       (deserialize-file)))
 
-(defn store-get [the-store ref]
-  (assert (Store? the-store))
+(defn* Store? store-get [ref]
   (=> reference? ref)
   (let [a (:possibly-val ref)  possibly-val @a]
     (if (identical? possibly-val no-val)
-        (referenceCache-get the-store ref)
+        (cache-get ref)
         possibly-val)))
 
 
