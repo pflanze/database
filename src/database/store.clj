@@ -319,7 +319,7 @@
 (def deserialize-stream
      (->* java.io.InputStreamReader.
           java.io.PushbackReader.
-          read
+      read ;; XX security
           deserialize:eval))
 
 (def deserialize-string
