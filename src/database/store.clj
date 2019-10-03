@@ -340,6 +340,7 @@
         path
         (hash-path the-store hashstr)]
     (spit-frugally path s)
+    ;; XX  put into cache!
     (reference* hashstr hashlong obj)))
 
 
