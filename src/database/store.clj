@@ -46,8 +46,8 @@
   ([str long]
    (reference* str long no-val))
   ([str long val]
-   (assert (string? str))
-   (assert (int? long)) ;; `int?` accepts longs and there's no `long?` predicate?
+   (=> string? str)
+   (=> int? long) ;; `int?` accepts longs and there's no `long?` predicate?
    (->Reference str long (atom val))))
 
 (def string->hashlong)
@@ -77,7 +77,7 @@
 
 (defn referenceCache-get [the-store ref]
   "Looks up the given reference in the cache, if not found, puts ref into the cache and loads the vale from disk, if found reads the value from the cached ref, in either case stores the value into ref. Returns the value."
-  (assert (reference? ref))
+  (=> reference? ref)
   ;; ref always has its possibly-val unset when we get here.
   (let [
         a @(:cache the-store)
@@ -225,7 +225,7 @@
 (def type-transformers (atom (entries->table [])))
 
 (defn add-transformer! [^TypeTransformer t]
-  (assert (TypeTransformer? t))
+  (=> TypeTransformer? t)
   (swap! type-transformers
          (fn [ts]
              (table-add ts t))))
@@ -354,7 +354,7 @@
 
 (defn store-get [the-store ref]
   (assert (Store? the-store))
-  (assert (reference? ref))
+  (=> reference? ref)
   (let [a (:possibly-val ref)  possibly-val @a]
     (if (identical? possibly-val no-val)
         (referenceCache-get the-store ref)
