@@ -89,11 +89,14 @@
 
 (defn cache-aset! [a i ref]
   (let [oldref (aget a i)]
-    (aset a i ref)
-    ;; 
-    (if oldref
-        (if (< @(:deref-count oldref) *deref-count-cutoff*)
-            (reset! (:possibly-val oldref) no-val)))))
+    (if (and oldref
+             (reference= oldref ref))
+        nil ;; nothing to do; can happen when reinstating, or via other threads
+        (do
+            (aset a i ref)
+            (if oldref
+                (if (< @(:deref-count oldref) *deref-count-cutoff*)
+                    (reset! (:possibly-val oldref) no-val)))))))
 
 (defn* Store? cache-put-reference! [ref]
   "Cache a (freshly stored) reference"
@@ -126,7 +129,8 @@
 (def reference? (class-predicate-for Reference))
 
 (defn reference= [a b]
-  (= (:hash a) (:hash b)))
+  (or (identical? a b)
+      (= (:hash a) (:hash b))))
 
 
 ;; Reference cache
