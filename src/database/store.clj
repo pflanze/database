@@ -44,9 +44,24 @@
 
 ;; Reference
 
-;; [String Long (Atom no-val|value)]
+;; [String Long (Atom no-val|value) (Atom Long)]
 ;; (long uses 64 bits)
-(defrecord Reference [hash hashlong possibly-val])
+(defrecord Reference [hash hashlong possibly-val deref-count])
+
+;; deref-count: For "hotness" detection so that wenn evicting from
+;; cache won't delete possibly-val.  This may be slow in cases with
+;; contention. Will perhaps have to increment sparsely/rarely in
+;; future optimization attempts, or perhaps use Java's
+;; AtomicInteger. Or simply drop the plan and just go via cache all
+;; the time (avoiding mutations to memory for reads completely!), but
+;; then find out another way to avoid fighting evict situations (move
+;; to second, smaller, cache instead of immediate dropping, then upon
+;; reread move back to main cache and increment the count at that
+;; time? (Use that count for the same purpose; less eviction?, and
+;; keep val in possibly-val. ?) (Other idea: increment lifetime-count
+;; randomly via modifying a random entry, or simply sequential, in the
+;; cache. But that's not hotness of use.)
+
 
 (def no-val (gensym 'noval))
 
@@ -56,7 +71,12 @@
   ([str long val]
    (=> string? str)
    (=> int? long) ;; `int?` accepts longs and there's no `long?` predicate?
-   (->Reference str long (atom val))))
+   (->Reference str long (atom val) (atom 0))))
+
+(defn reference-possibly-val [ref]
+  (inc! (:deref-count ref)) ;; even if there is no value, is fine
+  @(:possibly-val ref))
+
 
 (def string->hashlong)
 
@@ -404,7 +424,7 @@
 
 (defn* Store? store-get [ref]
   (=> reference? ref)
-  (let [a (:possibly-val ref)  possibly-val @a]
+  (let [possibly-val (reference-possibly-val ref)]
     (if (identical? possibly-val no-val)
         (cache-get ref)
         possibly-val)))
