@@ -231,18 +231,46 @@
     (def this2
          (let [this (->Database (open-store "db")
                                 false)]
-           (letfn [(tst []
-                        (is= (GET (let [this (:the-store this)]
-                                    (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14")))
+           (letfn [(make-reference
+                    []
+                    (let [this (:the-store this)]
+                      (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14")))
+                   (tst [r]
+                        (is= (GET r)
                              (black nil (map-entry 12 "12") nil)))]
-                  (is= (store-statistics (:the-store this))
-                       [0 0])
-                  (tst)
-                  (is= (store-statistics (:the-store this))
-                       [0 1])
-                  (tst)
-                  (is= (store-statistics (:the-store this))
-                       [1 1]))
+
+                  (let [r1 (make-reference) r2 (make-reference)]
+
+                    (is= (store-statistics (:the-store this))
+                         [0 0])
+
+                    (tst r1)
+                    (is= (store-statistics (:the-store this))
+                         [0 1])
+
+                    (tst r1)
+                    (is= (store-statistics (:the-store this))
+                         ;; no store access since r1 caches value
+                         ;; directly; xx weakref will make this
+                         ;; unreliable
+                         [0 1])
+
+                    (tst r2)
+                    (is= (store-statistics (:the-store this))
+                         ;; cache hit
+                         [1 1])
+
+                    (def r3 (make-reference))
+                    (is= (store-statistics (:the-store this))
+                         ;; cache hit
+                         [2 1])
+
+                    (tst r3)
+                    (is= (store-statistics (:the-store this))
+                         ;; no change since r3 already caches
+                         ;; value directly; xx weakref ditto
+                         [2 1])))
+           
            this))))
 
 
