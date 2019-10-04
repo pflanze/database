@@ -85,7 +85,7 @@
 ;; association, unless it's a "hot reference" (intensely used, might
 ;; be evicted because of a slot fight).
 
-(def ^:dynamic *deref-count-cutoff* 100)
+(def ^:dynamic *deref-count-cutoff* 50)
 
 (defn cache-aset! [a i ref]
   (let [oldref (aget a i)]
@@ -132,7 +132,7 @@
 ;; Reference cache
 
 ;; xx
-(def cache-start-size 16) ;; items, must be a power of 2
+(def cache-start-size 256) ;; items, must be a power of 2
 
 (defn make-cache
   ([]
