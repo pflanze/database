@@ -85,7 +85,7 @@
 ;; association, unless it's a "hot reference" (intensely used, might
 ;; be evicted because of a slot fight).
 
-(def ^:dynamic *deref-count-cutoff* 50)
+(def ^:dynamic *deref-count-cutoff* 500)
 
 (defn cache-aset! [a i ref]
   (let [oldref (aget a i)]
