@@ -60,6 +60,17 @@
 
 (def string->hashlong)
 
+
+(defn* Store? cache-put-reference! [ref]
+  "Cache a (freshly stored) reference"
+  (let [
+        a @(:cache this)
+        siz (count a)
+        hashlong (:hashlong ref)
+        i (bit-and hashlong (dec siz))]
+    (aset a i ref)
+    ref))
+
 (defn* Store? cache-maybe-get-reference [hashstr hashlong]
   "Try to retrieve an existing reference instance from the cache. Returns nill if not found."
   (let [
@@ -378,9 +389,11 @@
         (rawhash->hashlong rawhash)
         path
         (hash-path hashstr)]
-    (spit-frugally path s)
-    ;; XX  put into cache!
-    (reference* hashstr hashlong obj)))
+    (or (cache-maybe-get-reference hashstr hashlong)
+        (do
+            (spit-frugally path s)
+            (cache-put-reference!
+             (reference* hashstr hashlong obj))))))
 
 
 (defn* Store? store-get-from-disk [ref]
