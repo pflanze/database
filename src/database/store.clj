@@ -81,6 +81,20 @@
 (def string->hashlong)
 
 
+;; When evicting an item from the cache, also delete its value
+;; association, unless it's a "hot reference" (intensely used, might
+;; be evicted because of a slot fight).
+
+(def ^:dynamic *deref-count-cutoff* 100)
+
+(defn cache-aset! [a i ref]
+  (let [oldref (aget a i)]
+    (aset a i ref)
+    ;; 
+    (if oldref
+        (if (< @(:deref-count oldref) *deref-count-cutoff*)
+            (reset! (:possibly-val oldref) no-val)))))
+
 (defn* Store? cache-put-reference! [ref]
   "Cache a (freshly stored) reference"
   (let [
@@ -88,7 +102,7 @@
         siz (count a)
         hashlong (:hashlong ref)
         i (bit-and hashlong (dec siz))]
-    (aset a i ref)
+    (cache-aset! a i ref)
     ref))
 
 (defn* Store? cache-maybe-get-reference [hashstr hashlong]
@@ -141,7 +155,7 @@
     (letfn [(slowpath []
                       (let [v (_store-get-from-disk this ref)]
                         (reset! *ref v)
-                        (aset a i ref)
+                        (cache-aset! a i ref)
                         (inc! (:cache-misses this))
                         v))]
            (if-let [r (aget a i)]
