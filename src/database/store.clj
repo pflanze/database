@@ -441,7 +441,10 @@
   (let [possibly-val (reference-possibly-val ref)]
     (if (identical? possibly-val no-val)
         (cache-get ref)
-        possibly-val)))
+        (do
+            ;; Make sure the ref is in the cache again:
+            (cache-put-reference! ref)
+            possibly-val))))
 
 
 ;; XX implement an equality method in some way instead?
