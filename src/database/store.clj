@@ -79,7 +79,9 @@
         i (bit-and hashlong (dec siz))]
     (if-let [r (aget a i)]
             (if (= (:hash r) hashstr)
-                r))))
+                (do
+                    (inc! (:cache-hits this))
+                    r)))))
 
 (defn* Store? reference [hashstr]
   "reference constructor for deserialisation (separate from reference*, do not allow multiple arguments to be safe for deserialisation)"
