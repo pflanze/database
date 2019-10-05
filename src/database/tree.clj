@@ -35,7 +35,7 @@
 (defn node-branch-count [nod]
   (if (nil? nod)
       0
-      (:count nod)))
+      (:count (=> node? nod))))
 
 (def node-count-count (atom 0))
 
