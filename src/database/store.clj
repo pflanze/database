@@ -1,5 +1,5 @@
 (ns database.store
-    (:require [chj.debug :refer [p pseq]]
+    (:require [chj.debug :refer [p pseq make-p]]
               [chj.io :refer [spit-frugally mkdir]]
               [chj.util :refer [class-predicate-for
                                 for-each
@@ -471,4 +471,8 @@
               (reference= a b)
               false)
           (= a b))))
+
+
+
+(def pshow (make-p " (pshow)" show))
 

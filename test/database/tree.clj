@@ -15,7 +15,8 @@
                [
                 open-store store= reference
                 store-statistics store-statistics-reset!
-                Database? ->Database database-dostore database-donotstore]]
+                Database? ->Database database-dostore database-donotstore
+                pshow]]
               [chj.util :refer [map-entry]]
               [chj.debug :refer :all]))
 
@@ -144,7 +145,8 @@
 
 (defn t-bal-p [node]
   (or (t-bal node)
-      (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node))))))
+      (= (pshow "NEW" (GET (rb:balance (pshow "ORIG" node))))
+         (pshow "OLD" (GET (rb:balance-old node))))))
 
 
 (defn test-balance-old [n]
