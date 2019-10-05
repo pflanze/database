@@ -10,7 +10,8 @@
               [database.store :as s]
               [chj.threading :refer [defn* def*]]
               [chj.debug :refer [p]]
-              [chj.util :refer [=> inc! either]]))
+              [chj.util :refer [=> inc! either]]
+              [database.dbrecord :refer [defdbrecord]]))
 
 
 
@@ -23,20 +24,18 @@
 
 
 
+(defdbrecord Node [color a kv b count])
+
 (defn redblack-keyword? [v]
   (case v
     (:red :black) true
     false))
 
-(defn node? [v]
-  (and (vector? v)
-       (= (count v) 5)
-       (redblack-keyword? (first v))))
 
 (defn node-branch-count [nod]
-  (match nod
-         nil 0
-         [color a kv b count] count))
+  (if (nil? nod)
+      0
+      (:count nod)))
 
 (def node-count-count (atom 0))
 
@@ -49,7 +48,7 @@ need to force a or b into memory"
   (=> node-branch? a)
   (=> map-entry? kv)
   (=> node-branch? b)
-  [color a kv b count])
+  (->Node color a kv b count))
 
 (defn* s/Database? node [color a kv b]
   "Make a new tree node"
