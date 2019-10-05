@@ -10,7 +10,7 @@
               [database.store :as s]
               [chj.threading :refer [defn* def*]]
               [chj.debug :refer [p]]
-              [chj.util :refer [=> inc! either error ->vector]]
+              [chj.util :refer [=> inc! either error ->vector ->*]]
               [database.dbrecord :refer [defdbrecord]]))
 
 
@@ -165,15 +165,31 @@ need to force a or b into memory"
           (PUT v))))
 
 
+(defn node-branch->vector-deep [v]
+  (if v
+      (if (node? v)
+          (->vector (map (->* val node-branch->vector-deep) (seq v)))
+          v)
+      v))
+
+(defn vector->node-branch-deep [v]
+  (if (and v (vector? v) (= (count v) 5))
+      (apply node (map vector->node-branch-deep (seq v)))
+      v))
+
 (defn* s/Database? rb:balance-old [tree]
-  (match (->vector (seq tree))
+  (match (node-branch->vector-deep tree)
          (:or [:black [:red [:red a x b _] y c _] z d _]
               [:black [:red a x [:red b y c _] _] z d _]
               [:black a x [:red [:red b y c _] z d _] _]
               [:black a x [:red b y [:red c z d _] _] _])
-         (red* (black* a x b)
+         (red* (black* (vector->node-branch-deep a)
+                       x
+                       (vector->node-branch-deep b))
               y
-              (black* c z d))
+              (black* (vector->node-branch-deep c)
+                      z
+                      (vector->node-branch-deep d)))
          :else tree))
 
 (defn* s/Database? rb:balance [tree]
