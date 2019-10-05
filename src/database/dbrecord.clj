@@ -24,18 +24,19 @@
                   (error "defdbrecord needs a name with a lower case first character"
                          name))
               (symbol capnamestr))
-            classnamedot
-            (symbol (str classname "."))]
+            ->classname
+            (symbol (str "->" classname))]
+        
         (swap! definitions #(conj % [name fieldnames]))
+
         (with-gensym
          v
          `(do
               ;; record
               (defrecord ~classname ~fieldnames)
 
-              ;; constructor *function*
-              (defn ~name ~fieldnames
-                (~classnamedot ~@fieldnames))
+              ;; alias constructor function
+              (def ~name ~->classname)
 
             ;; predicate
             (defn ~(symbol (str name "?")) [v#]

@@ -11,7 +11,7 @@
          '[a kv b])
        '(do
             (clojure.core/defrecord Foo [a kv b])
-            (clojure.core/defn foo [a kv b] (Foo. a kv b))
+            (def foo ->Foo)
           (clojure.core/defn
            foo?
            [v__6111__auto__]
