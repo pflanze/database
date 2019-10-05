@@ -62,6 +62,13 @@
 ;; randomly via modifying a random entry, or simply sequential, in the
 ;; cache. But that's not hotness of use.)
 
+(def reference? (class-predicate-for Reference))
+
+(defn reference= [a b]
+  (or (identical? a b)
+      (= (:hash a) (:hash b))))
+
+
 
 (def no-val (gensym 'noval))
 
@@ -125,12 +132,6 @@
   (let [hashlong (string->hashlong hashstr)]
     (or (cache-maybe-get-reference hashstr hashlong)
         (reference* hashstr hashlong))))
-
-(def reference? (class-predicate-for Reference))
-
-(defn reference= [a b]
-  (or (identical? a b)
-      (= (:hash a) (:hash b))))
 
 
 ;; Reference cache
