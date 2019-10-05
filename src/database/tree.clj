@@ -33,7 +33,7 @@
        (= (count v) 5)
        (redblack-keyword? (first v))))
 
-(defn node-count [nod]
+(defn node-branch-count [nod]
   (match nod
          nil 0
          [color a kv b count] count))
@@ -54,9 +54,9 @@ need to force a or b into memory"
 (defn* s/Database? node [color a kv b]
   "Make a new tree node"
   (inc! node-count-count)
-  (let [count (+ (node-count (GET a))
+  (let [count (+ (node-branch-count (GET a))
                  1
-                 (node-count (GET b)))]
+                 (node-branch-count (GET b)))]
     (node* color a kv b count)))
 
 (defn node_color [color]
@@ -162,7 +162,7 @@ need to force a or b into memory"
                                ;;             M1cnt)
                                ;;        treecnt)
                                (let [
-                                     bcnt (node-count (GET b))
+                                     bcnt (node-branch-count (GET b))
                                      N1zbcnt (+ N1cnt 1 bcnt)
                                      ]
                                  (red* (black* N1 z b N1zbcnt)
@@ -177,7 +177,7 @@ need to force a or b into memory"
                                       ;; tree    N1 z M1    N2 z2 M2    c z2 d
                                       ;;(cont N1 N2 c d z z2 z3)
                                       (let [
-                                            N2cnt (node-count N2')
+                                            N2cnt (node-branch-count N2')
                                             N1N2cnt (+ N1cnt N2cnt 1)]
                                         (red* (black* N1 z N2 N1N2cnt)
                                               z2
@@ -215,9 +215,9 @@ need to force a or b into memory"
                                     ;;        M1 ;; M1cnt
                                     ;;        treecnt)
                                     (let [
-                                          N2cnt (node-count N2')
+                                          N2cnt (node-branch-count N2')
                                           M1cnt (- treecnt N1cnt 1)
-                                          bcnt (node-count (GET b))
+                                          bcnt (node-branch-count (GET b))
                                           ccnt (- M2cnt bcnt 1)
                                           ]
                                       (red* (black* N2 y b (+ N2cnt bcnt 1))
@@ -228,7 +228,7 @@ need to force a or b into memory"
                                     :else
                                     (otherwise N1cnt))))
                     :else
-                    (otherwise (node-count N1'))))
+                    (otherwise (node-branch-count N1'))))
            :else tree)))
 
 
@@ -246,16 +246,16 @@ need to force a or b into memory"
                      (let [
                            n' (GET a)
                            n* (ins n')
-                           cnt* (+ cnt (- (node-count n*)
-                                          (node-count n')))]
+                           cnt* (+ cnt (- (node-branch-count n*)
+                                          (node-branch-count n')))]
                        ;; xx why is cnt* not simply (inc cnt) ?
                        (rb:balance (node* color n* kv b cnt*)))
                      1
                      (let [
                            n' (GET b)
                            n* (ins n')
-                           cnt* (+ cnt (- (node-count n*)
-                                          (node-count n')))]
+                           cnt* (+ cnt (- (node-branch-count n*)
+                                          (node-branch-count n')))]
                        (rb:balance (node* color a kv n* cnt*)))
                      0
                      tree)))
@@ -354,7 +354,7 @@ need to force a or b into memory"
 
 (defn* s/Database? rb:count [tree]
   "The number of associations in the tree"
-  (node-count (GET tree)))
+  (node-branch-count (GET tree)))
 
 
 ;; (defn dissoc [tree x])

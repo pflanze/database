@@ -5,7 +5,7 @@
               [database.tree
                :refer
                [
-                node* node-count red black
+                node* node-branch-count red black
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -88,7 +88,7 @@
                      (PUT a)
                      (map-entry k (str k))
                      (PUT b)
-                     (+ (node-count a) 1 (node-count b))))
+                     (+ (node-branch-count a) 1 (node-branch-count b))))
             nil))
       nil))
 
