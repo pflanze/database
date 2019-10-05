@@ -24,8 +24,7 @@
 
 
 
-(defdbrecord Node [color a kv b count])
-(def node? Node?)
+(defdbrecord node [color a kv b count])
 
 (defn redblack-keyword? [v]
   (case v
@@ -42,6 +41,8 @@
 
 (def node-branch? (either nil? node? s/reference?))
 
+
+;; XX conflict with defdbrecord node, how to do this?
 (defn node [color a kv b count]
   "The full node constructor, no need to calculate count (and hence no
 need to force a or b into memory"
