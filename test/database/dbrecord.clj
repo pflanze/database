@@ -30,12 +30,21 @@
               (database.store/type-transformer:to-code (:b v6200)))))))))
 
 
+;; lcfirst:
 (defdbrecord pair [car cdr])
+;; capitalized (omits creation of constructor):
+(defdbrecord Cons [car cdr])
 
 (deftest constructor
 
   (is= (Pair. 10 (Pair. 20 30))
-       (pair 10 (pair 20 30))))
+       (pair 10 (pair 20 30)))
+
+  (is= (Cons. 10 (Cons. 20 30))
+       (->Cons 10 (->Cons 20 30)))
+
+  (is (not (= (Pair. 20 30)
+              (Cons. 20 30)))))
 
 (deftest reversibility
 
