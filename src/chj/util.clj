@@ -160,6 +160,20 @@ evenly dividable by n"
       (char<= \0 c \9)
       (char= c \_)))
 
+(defn char-symbol-safe? [c]
+  (or (char-alpha-numeric? c)
+      (char= c \-)
+      (char= c \+)
+      (char= c \*)
+      (char= c \%)
+      ;; & isn't safe if by itself? ah it is
+      (char= c \&)
+      (char= c \?)
+      (char= c \!)))
+
 (defn alpha-numeric? [s]
   (every? char-alpha-numeric? s))
 
+(defn symbol-safe? [s]
+  (if-let [s (seq s)]
+          (every? char-symbol-safe? s)))
