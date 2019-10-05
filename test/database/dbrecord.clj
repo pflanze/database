@@ -25,9 +25,9 @@
              [v6200]
              (clojure.core/list
               (quote foo)
-              (database.store/type-transformer:to-code (:a v6200))
-              (database.store/type-transformer:to-code (:kv v6200))
-              (database.store/type-transformer:to-code (:b v6200)))))))))
+              (database.store/show (:a v6200))
+              (database.store/show (:kv v6200))
+              (database.store/show (:b v6200)))))))))
 
 
 ;; lcfirst:

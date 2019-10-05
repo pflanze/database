@@ -73,7 +73,7 @@
                 (fn [~v]
                     (list '~constructorname
                           ~@(map (fn [fieldname]
-                                     `(s/type-transformer:to-code
+                                     `(s/show
                                        (~(keyword fieldname) ~v)))
                                  fieldnames))))))))))
 

@@ -327,7 +327,7 @@
                     nil
                     identity))
 
-(declare type-transformer:to-code)
+(declare show)
 
 (defn serialization-not-supported [v]
   (error "serialization of this type is not supported" (type v)))
@@ -351,7 +351,7 @@
                    'list
                    list
                    (fn [v]
-                       (cons 'list (map type-transformer:to-code v))))
+                       (cons 'list (map show v))))
  (type-transformer clojure.lang.Symbol
                    'symbol
                    symbol
@@ -376,7 +376,7 @@
                    'vector
                    vector
                    (fn [v]
-                       (cons 'vector (map type-transformer:to-code v))))
+                       (cons 'vector (map show v))))
  (identityTransformer java.lang.Long)
  (identityTransformer java.lang.String)
  (identityTransformer java.lang.Boolean)
@@ -385,15 +385,15 @@
  (identityTransformer nil))
 
 
-
-(defn type-transformer:to-code [obj]
+(defn show [obj]
   (let [t (type obj)]
     (if-let [tr (table-ref @type-transformers :type t)]
             ((:to-code tr) obj)
-            (error "serialize: don't know about this type" t))))
+            (error "don't know how to show this type" t))))
+
 
 (defn serialize [obj]
-  (pr-str (type-transformer:to-code obj)))
+  (pr-str (show obj)))
 
 (defn* Store? deserialize:eval [e]
   (if (list? e)
