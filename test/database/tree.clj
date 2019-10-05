@@ -231,13 +231,18 @@
     (t (database-dostore))
 
     ;; get a value via the cache:
+
+    (def hash1 (-> (let [this (database-dostore)]
+                     (PUT (black* nil (map-entry 12 "12") nil)))
+                   :hash))
+
     (def this2
          (let [this (->Database (open-store "db")
                                 false)]
            (letfn [(make-reference
                     []
                     (let [this (:the-store this)]
-                      (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14")))
+                      (reference hash1)))
                    (tst [r]
                         (is= (GET r)
                              (black* nil (map-entry 12 "12") nil)))]
