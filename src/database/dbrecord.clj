@@ -2,7 +2,7 @@
     (:require [chj.debug :refer [p pseq]]
               [database.store :as s]
               [clojure.string :as str]
-              [chj.util :refer [with-gensym]]))
+              [chj.util :refer [error with-gensym]]))
 
 
 ;; Easily define record data types to be stored in the database
@@ -20,9 +20,10 @@
                   (str name)
                   capnamestr
                   (str/capitalize namestr)]
-              (symbol (if (= namestr capnamestr)
-                          (str "_" name)
-                          capnamestr)))
+              (if (= namestr capnamestr)
+                  (error "defdbrecord needs a name with a lower case first character"
+                         name))
+              (symbol capnamestr))
             classnamedot
             (symbol (str classname "."))]
         (swap! definitions #(conj % [name fieldnames]))
