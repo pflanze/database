@@ -42,7 +42,7 @@
 
 (def node-branch? (either nil? node? s/reference?))
 
-(defn* s/Database? node* [color a kv b count]
+(defn node* [color a kv b count]
   "The full node constructor, no need to calculate count (and hence no
 need to force a or b into memory"
   (=> redblack-keyword? color)
@@ -66,10 +66,10 @@ need to force a or b into memory"
 (def* s/Database? black (node_color :black))
 
 (defn node_color* [color]
-  (fn [this a kv b count] (node* color a kv b count)))
+  (fn [a kv b count] (node* color a kv b count)))
 
-(def* s/Database? red* (node_color* :red))
-(def* s/Database? black* (node_color* :black))
+(def red* (node_color* :red))
+(def black* (node_color* :black))
 
 
 
