@@ -143,7 +143,8 @@
   (= (GET (rb:balance node)) (GET (rb:balance-old node))))
 
 (defn t-bal-p [node]
-  (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node)))))
+  (or (t-bal node)
+      (= (p "NEW" (GET (rb:balance node))) (p "OLD" (GET (rb:balance-old node))))))
 
 
 (defn test-balance-old [n]
@@ -151,7 +152,7 @@
   ;; in-memory trees
   (dotimes [rep n]
            (let [node (_random-node (database-donotstore))]
-             (is (t-bal node)))))
+             (is (t-bal-p node)))))
 
 (deftest t-balance-old
   (test-balance-old 100))
