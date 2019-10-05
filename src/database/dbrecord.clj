@@ -8,9 +8,7 @@
 ;; Easily define record data types to be stored in the database
 
 
-(def definitions (atom {}))
-
-(defmacro defdbrecord [name fieldnames]
+(defn defdbrecord-expand [definitions  name fieldnames]
   (if (= fieldnames (name @definitions))
       ;; The same dbrecord was already defined with the same fieldnames
       ;; last time, don't do anything (to avoid (= (name) (name))
@@ -54,4 +52,10 @@
                                    `(s/type-transformer:to-code
                                      (~(keyword fieldname) ~v)))
                                fieldnames))))))))))
+
+
+(def definitions (atom {}))
+
+(defmacro defdbrecord [name fieldnames]
+  (defdbrecord-expand definitions  name fieldnames))
 
