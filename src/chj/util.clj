@@ -47,8 +47,14 @@
      ~@body))
 
 
-(def keyword->string
-     (->* str (subs 1)))
+(defn keyword->string [v]
+  (=> keyword? v)
+  (-> v str (subs 1)))
+
+(defn symbol->string [v]
+  (=> symbol? v)
+  ;; Is this always correct?
+  (str v))
 
 ;; XX is there a better way?
 (defn vector-map [f v]
