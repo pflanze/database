@@ -141,3 +141,25 @@ evenly dividable by n"
 
 ;; map-entry? is in clojure.core
 
+
+(defn make-comparison [<]
+  (fn
+   ([a b] (< (compare a b) 0))
+   ([a b c] (and (< (compare a b) 0)
+                 (< (compare b c) 0)))))
+
+(def char< (make-comparison <))
+(def char<= (make-comparison <=))
+(def char> (make-comparison >))
+(def char>= (make-comparison >=))
+(def char= (make-comparison =))
+
+(defn char-alpha-numeric? [c]
+  (or (char<= \a c \z)
+      (char<= \A c \Z)
+      (char<= \0 c \9)
+      (char= c \_)))
+
+(defn alpha-numeric? [s]
+  (every? char-alpha-numeric? s))
+
