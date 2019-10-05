@@ -8,8 +8,10 @@
                                 => either
                                 inc!
                                 keyword->string
+                                symbol->string
                                 type?
-                                map-entry]]
+                                map-entry
+                                symbol-safe?]]
               [chj.threading :refer [defn* def*]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
@@ -356,12 +358,21 @@
                    'symbol
                    symbol
                    (fn [v]
-                       (list 'symbol (str v))))
+                       (let [v' (symbol->string v)]
+                         ;; Do *not* do symbol-safe? thing here as
+                         ;; true, false, nil are special, also maybe
+                         ;; missed other cases? Definitely too much
+                         ;; magic in symbols. Also, quote or not? So,
+                         ;; just:
+                         (list 'symbol v'))))
  (type-transformer clojure.lang.Keyword
                    'keyword
                    keyword
                    (fn [v]
-                       (list 'keyword (keyword->string v))))
+                       (let [v' (keyword->string v)]
+                         (if (symbol-safe? v')
+                             v
+                             (list 'keyword v')))))
  (type-transformer clojure.lang.MapEntry
                    'map-entry
                    map-entry
