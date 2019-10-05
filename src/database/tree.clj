@@ -42,7 +42,7 @@
 
 (def node-branch? (either nil? node? s/reference?))
 
-(defn node* [color a kv b count]
+(defn node [color a kv b count]
   "The full node constructor, no need to calculate count (and hence no
 need to force a or b into memory"
   (=> redblack-keyword? color)
@@ -51,29 +51,29 @@ need to force a or b into memory"
   (=> node-branch? b)
   (->Node color a kv b count))
 
-(defn* s/Database? node [color a kv b]
+(defn* s/Database? node* [color a kv b]
   "Make a new tree node"
   (inc! node-count-count)
   (let [count (+ (node-branch-count (GET a))
                  1
                  (node-branch-count (GET b)))]
-    (node* color a kv b count)))
-
-(defn node_color [color]
-  (fn [this a kv b] (node color a kv b)))
-
-(def* s/Database? red (node_color :red))
-(def* s/Database? black (node_color :black))
+    (node color a kv b count)))
 
 (defn node_color* [color]
-  (fn [a kv b count] (node* color a kv b count)))
+  (fn [this a kv b] (node* color a kv b)))
 
-(def red* (node_color* :red))
-(def black* (node_color* :black))
+(def* s/Database? red* (node_color* :red))
+(def* s/Database? black* (node_color* :black))
+
+(defn node_color [color]
+  (fn [a kv b count] (node color a kv b count)))
+
+(def red (node_color :red))
+(def black (node_color :black))
 
 
 (defn error-not-a-node [nod]
-  (error "not a node" nod))
+  (error "not a node*" nod))
 
 
 (defn node-color [nod] (:color nod))
@@ -83,7 +83,7 @@ need to force a or b into memory"
 (defn node-count [nod] (:count nod))
 
 (defn node->black [nod]
-  (black* (:a nod)
+  (black (:a nod)
           (:kv nod)
           (:b nod)
           (:count nod)))
@@ -120,7 +120,7 @@ need to force a or b into memory"
 (defn* s/Database? GET-deeply [x]
   (let [x' (GET x)]
     (if (node? x')
-        (node* (node-color x')
+        (node (node-color x')
                (GET-deeply (node-a x'))
                (node-kv x')
                (GET-deeply (node-b x'))
@@ -155,7 +155,7 @@ need to force a or b into memory"
             (PUT (if (and (not-needs-PUT? a)
                           (not-needs-PUT? b))
                      v
-                     (node* (node-color v)
+                     (node (node-color v)
                             (PUT-deeply a)
                             (node-kv v)
                             (PUT-deeply b)
@@ -170,17 +170,17 @@ need to force a or b into memory"
               [:black [:red a x [:red b y c _] _] z d _]
               [:black a x [:red [:red b y c _] z d _] _]
               [:black a x [:red b y [:red c z d _] _] _])
-         (red (black a x b)
+         (red* (black* a x b)
               y
-              (black c z d))
+              (black* c z d))
          :else tree))
 
 (defn* s/Database? rb:balance [tree]
   (let [cont
         (fn [a b c d x y z]
-            (red (black a x b)
+            (red* (black* a x b)
                  y
-                 (black c z d)))]
+                 (black* c z d)))]
     (let [
           tree' (GET tree)
           N1 (node-a tree')
@@ -210,9 +210,9 @@ need to force a or b into memory"
                                 ;;    a  b c d  x y z
                                 ;;(cont N1 b c M2 z y z2)
                                 ;; Matched:
-                                ;; (black N1
+                                ;; (black* N1
                                 ;;        z
-                                ;;        (red (red b y c N2cnt)
+                                ;;        (red* (red* b y c N2cnt)
                                 ;;             z2
                                 ;;             M2
                                 ;;             M1cnt)
@@ -226,9 +226,9 @@ need to force a or b into memory"
                                       bcnt (node-branch-count (GET b))
                                       N1zbcnt (+ N1cnt 1 bcnt)
                                       ]
-                                  (red* (black* N1 z b N1zbcnt)
+                                  (red (black N1 z b N1zbcnt)
                                         y
-                                        (black* c z2 M2 (- treecnt N1zbcnt 1))
+                                        (black c z2 M2 (- treecnt N1zbcnt 1))
                                         treecnt))
                                    
 
@@ -244,9 +244,9 @@ need to force a or b into memory"
                                             
                                             N2cnt (node-branch-count N2')
                                             N1N2cnt (+ N1cnt N2cnt 1)]
-                                        (red* (black* N1 z N2 N1N2cnt)
+                                        (red (black N1 z N2 N1N2cnt)
                                               z2
-                                              (black* c z3 d (- treecnt N1N2cnt 1))
+                                              (black c z3 d (- treecnt N1N2cnt 1))
                                               treecnt))
 
                                       tree))))
@@ -269,9 +269,9 @@ need to force a or b into memory"
                             N2cnt (node-count N2')]
                         ;;    a b c  d
                         ;;(cont a b M2 M1 x y z)
-                        (red* (black* a x b N2cnt)
+                        (red (black a x b N2cnt)
                               y
-                              (black* M2 z M1 (- treecnt N2cnt 1))
+                              (black M2 z M1 (- treecnt N2cnt 1))
                               treecnt))
 
                       (let [M2' (GET M2)]
@@ -286,7 +286,7 @@ need to force a or b into memory"
                               ;;    a  b c d  x y  z
                               ;;(cont N2 b c M1 y y2 z)
                               ;; Matched:
-                              ;; (black (red N2 y M2 N1cnt)
+                              ;; (black* (red* N2 y M2 N1cnt)
                               ;;        ;;   N2cnt M2cnt
                               ;;        z
                               ;;        M1 ;; M1cnt
@@ -297,9 +297,9 @@ need to force a or b into memory"
                                     bcnt (node-branch-count (GET b))
                                     ccnt (- M2cnt bcnt 1)
                                     ]
-                                (red* (black* N2 y b (+ N2cnt bcnt 1))
+                                (red (black N2 y b (+ N2cnt bcnt 1))
                                       y2
-                                      (black* c z M1 (+ ccnt M1cnt 1))
+                                      (black c z M1 (+ ccnt M1cnt 1))
                                       treecnt)))
 
                             (otherwise N1cnt)))))
@@ -324,18 +324,18 @@ need to force a or b into memory"
                          count* (+ count (- (node-branch-count n*)
                                             (node-branch-count n')))]
                      ;; xx why is count* not simply (inc count) ?
-                     (rb:balance (node* color n* kv b count*)))
+                     (rb:balance (node color n* kv b count*)))
                    1
                    (let [
                          n' (GET b)
                          n* (ins n')
                          count* (+ count (- (node-branch-count n*)
                                             (node-branch-count n')))]
-                     (rb:balance (node* color a kv n* count*)))
+                     (rb:balance (node color a kv n* count*)))
                    0
                    tree))
 
-                (red* nil (clojure.lang.MapEntry. k v) nil 1)))
+                (red nil (clojure.lang.MapEntry. k v) nil 1)))
         tree*
         (ins (GET tree))]
     (PUT-deeply (node->black tree*))))

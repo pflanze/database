@@ -5,7 +5,7 @@
               [database.tree
                :refer
                [
-                node* node-branch-count red black
+                node node-branch-count red* black*
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -84,7 +84,7 @@
             (let [
                   a (random-node* 10 kmin k false)
                   b (random-node* 10 (inc k) kmax false)]
-              (node* (if (and (= i 0) (not force-black?)) :red :black)
+              (node (if (and (= i 0) (not force-black?)) :red :black)
                      (PUT a)
                      (map-entry k (str k))
                      (PUT b)
@@ -124,15 +124,15 @@
                  z (map-entry 30 "thirty")
                  d (random-node-other-than #{a b c} 31 40 false)
 
-                 balanced (red (black a x b)
+                 balanced (red* (black* a x b)
                                y
-                               (black c z d))]
+                               (black* c z d))]
              
              (is*
-              (= (rb:balance (black (red (red a x b) y c) z d)) balanced)
-              (= (rb:balance (black (red a x (red b y c)) z d)) balanced)
-              (= (rb:balance (black a x (red (red b y c) z d))) balanced)
-              (= (rb:balance (black a x (red b y (red c z d)))) balanced)))))
+              (= (rb:balance (black* (red* (red* a x b) y c) z d)) balanced)
+              (= (rb:balance (black* (red* a x (red* b y c)) z d)) balanced)
+              (= (rb:balance (black* a x (red* (red* b y c) z d))) balanced)
+              (= (rb:balance (black* a x (red* b y (red* c z d)))) balanced)))))
 
 (deftest t-balance
   (test-balance 100))
@@ -238,7 +238,7 @@
                       (reference "RAg+A7UHrw0pHYa4aAMCPY71_9fixgHhOPw7NyA0J14")))
                    (tst [r]
                         (is= (GET r)
-                             (black nil (map-entry 12 "12") nil)))]
+                             (black* nil (map-entry 12 "12") nil)))]
 
                   (let [r1 (make-reference) r2 (make-reference)]
 
