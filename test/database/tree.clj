@@ -5,7 +5,7 @@
               [database.tree
                :refer
                [
-                node node-branch-count red* black*
+                node node-branch-count red* black* red black
                 rb:depth rb:count rb:balance-old rb:balance rb:add
                 rb:conj rb:contains? rb:keys rb:vals rb:ref rb:into seq->rb
                 rb:rkeys rb:rvals rb:seq rb:rseq
@@ -58,11 +58,11 @@
   
   (is*
    (= t1
-      [:black nil [10 "ten"] [:red nil [20 "twenty"] nil 1] 2])
+      (black nil (map-entry 10 "ten") (red nil (map-entry 20 "twenty") nil 1) 2))
    (= (rb:depth t1)
       2)
    (= t2
-      [:black [:red nil [10 "ten"] nil 1] [20 "twenty"] nil 2])
+      (black (red nil (map-entry 10 "ten") nil 1) (map-entry 20 "twenty") nil 2))
    (= (rb:depth t2)
       2)
    (= (rb:depth nil)
