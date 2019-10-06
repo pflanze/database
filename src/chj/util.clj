@@ -183,3 +183,11 @@ evenly dividable by n"
 (defn symbol-safe? [s]
   (if-let [s (seq s)]
           (every? char-symbol-safe? s)))
+
+
+(def long? (class-predicate-for Long))
+
+(defn natural0-long? [n]
+  (and (long? n)
+       (not (neg? n))))
+

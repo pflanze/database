@@ -11,7 +11,8 @@
                                 symbol->string
                                 type?
                                 map-entry
-                                symbol-safe?]]
+                                symbol-safe?
+                                natural0-long?]]
               [chj.threading :refer [defn* def*]]
               [chj.table :refer [entries->table table-add table-ref]]
               [clojure.test :refer [function?]])
@@ -138,12 +139,17 @@
 
 ;; Reference cache
 
-;; xx
-(def cache-start-size 256) ;; items, must be a power of 2
+(defn expt-2 [n]
+  (=> natural0-long? n)
+  (bit-shift-left 1 n))
+
+(def ^:dynamic *cache-start-size-exponent*
+     "in (expt 2 cache-start-size-exponent) items"
+     8)
 
 (defn make-cache
   ([]
-   (make-cache cache-start-size))
+   (make-cache (expt-2 *cache-start-size-exponent*)))
   ([n]
    (make-array Reference n)))
 
