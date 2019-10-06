@@ -42,7 +42,7 @@
 (def node-branch? (either nil? node? s/reference?))
 
 
-;; XX conflict with defdbrecord node, how to do this?
+;; xx conflict with defdbrecord node, how to do this properly?
 (defn node [color a kv b count]
   "The full node constructor, no need to calculate count (and hence no
 need to force a or b into memory"
