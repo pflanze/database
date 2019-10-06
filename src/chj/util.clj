@@ -164,18 +164,18 @@ evenly dividable by n"
   (or (compare<= \a c \z)
       (compare<= \A c \Z)
       (compare<= \0 c \9)
-      (compare= c \_)))
+      (= c \_)))
 
 (defn char-symbol-safe? [c]
   (or (char-alpha-numeric? c)
-      (compare= c \-)
-      (compare= c \+)
-      (compare= c \*)
-      (compare= c \%)
+      (= c \-)
+      (= c \+)
+      (= c \*)
+      (= c \%)
       ;; & isn't safe if by itself? ah it is
-      (compare= c \&)
-      (compare= c \?)
-      (compare= c \!)))
+      (= c \&)
+      (= c \?)
+      (= c \!)))
 
 (defn alpha-numeric? [s]
   (every? char-alpha-numeric? s))
