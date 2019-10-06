@@ -185,9 +185,19 @@ evenly dividable by n"
           (every? char-symbol-safe? s)))
 
 
-(def long? (class-predicate-for Long))
+;; (def long? (class-predicate-for Long))
+;; Even though (type 123) is java.lang.Long, int? returns true for it
 
-(defn natural0-long? [n]
-  (and (long? n)
+(defn natural0-int? [n]
+  (and (int? n)
        (not (neg? n))))
+
+(defn long-bitnumber? [n]
+  (and (int? n)
+       (<= 0 n 63)))
+
+(defn exp2 [n]
+  (=> natural0-int? n)
+  (assert (<= n 62))
+  (bit-shift-left 1 n))
 
