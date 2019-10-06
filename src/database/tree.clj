@@ -168,13 +168,17 @@ need to force a or b into memory"
 (defn node-branch->vector-deep [v]
   (if v
       (if (node? v)
-          (->vector (map (->* val node-branch->vector-deep) (seq v)))
+          (->> (seq v)
+               (map (->* val node-branch->vector-deep))
+               ->vector)
           v)
       v))
 
 (defn vector->node-branch-deep [v]
   (if (and v (vector? v) (= (count v) 5))
-      (apply node (map vector->node-branch-deep (seq v)))
+      (->> (seq v)
+           (map vector->node-branch-deep)
+           (apply node))
       v))
 
 (defn* s/Database? rb:balance-old [tree]
