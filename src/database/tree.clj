@@ -200,20 +200,17 @@ need to force a or b into memory"
   (let [cont
         (fn [a b c d x y z]
             (red* (black* a x b)
-                 y
-                 (black* c z d)))]
-    (let [
-          tree' (GET tree)
-          N1 (node-a tree')
-          z (node-kv tree')
-          M1 (node-b tree')
-          treecnt (node-count tree')
-          ]
-      
+                  y
+                  (black* c z d)))]
+    (let [tree' (GET tree)]
       (if (black?* tree')
           (let [
-                N1'
-                (GET N1)
+                N1 (node-a tree')
+                z (node-kv tree')
+                M1 (node-b tree')
+                treecnt (node-count tree')
+
+                N1' (GET N1)
                 otherwise
                 (fn [N1cnt]
                     (let [M1' (GET M1)]
@@ -224,7 +221,7 @@ need to force a or b into memory"
                                 N2 (node-a M1')
                                 z2 (node-kv M1')
                                 M2 (node-b M1')
-                                M1cnt (node-count M1')
+                                ;; M1cnt (node-count M1')
 
                                 N2' (GET N2)]
                             (if (red?* N2')
@@ -248,9 +245,9 @@ need to force a or b into memory"
                                       N1zbcnt (+ N1cnt 1 bcnt)
                                       ]
                                   (red (black N1 z b N1zbcnt)
-                                        y
-                                        (black c z2 M2 (- treecnt N1zbcnt 1))
-                                        treecnt))
+                                       y
+                                       (black c z2 M2 (- treecnt N1zbcnt 1))
+                                       treecnt))
                                    
 
                                 (let [M2' (GET M2)]
@@ -266,9 +263,9 @@ need to force a or b into memory"
                                             N2cnt (node-branch-count N2')
                                             N1N2cnt (+ N1cnt N2cnt 1)]
                                         (red (black N1 z N2 N1N2cnt)
-                                              z2
-                                              (black c z3 d (- treecnt N1N2cnt 1))
-                                              treecnt))
+                                             z2
+                                             (black c z3 d (- treecnt N1N2cnt 1))
+                                             treecnt))
 
                                       tree))))
                           tree)))]
@@ -277,7 +274,6 @@ need to force a or b into memory"
                       N2 (node-a N1')
                       y (node-kv N1')
                       M2 (node-b N1')
-                      N1cnt (node-count N1')
 
                       N2' (GET N2)]
 
@@ -291,11 +287,13 @@ need to force a or b into memory"
                         ;;    a b c  d
                         ;;(cont a b M2 M1 x y z)
                         (red (black a x b N2cnt)
-                              y
-                              (black M2 z M1 (- treecnt N2cnt 1))
-                              treecnt))
+                             y
+                             (black M2 z M1 (- treecnt N2cnt 1))
+                             treecnt))
 
-                      (let [M2' (GET M2)]
+                      (let [
+                            N1cnt (node-count N1')
+                            M2' (GET M2)]
                         (if (red?* M2')
                             (let [
                                   b (node-a M2')
@@ -319,9 +317,9 @@ need to force a or b into memory"
                                     ccnt (- M2cnt bcnt 1)
                                     ]
                                 (red (black N2 y b (+ N2cnt bcnt 1))
-                                      y2
-                                      (black c z M1 (+ ccnt M1cnt 1))
-                                      treecnt)))
+                                     y2
+                                     (black c z M1 (+ ccnt M1cnt 1))
+                                     treecnt)))
 
                             (otherwise N1cnt)))))
                 
