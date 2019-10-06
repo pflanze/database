@@ -154,28 +154,28 @@ evenly dividable by n"
    ([a b c] (and (< (compare a b) 0)
                  (< (compare b c) 0)))))
 
-(def char< (make-comparison <))
-(def char<= (make-comparison <=))
-(def char> (make-comparison >))
-(def char>= (make-comparison >=))
-(def char= (make-comparison =))
+(def compare< (make-comparison <))
+(def compare<= (make-comparison <=))
+(def compare> (make-comparison >))
+(def compare>= (make-comparison >=))
+(def compare= (make-comparison =))
 
 (defn char-alpha-numeric? [c]
-  (or (char<= \a c \z)
-      (char<= \A c \Z)
-      (char<= \0 c \9)
-      (char= c \_)))
+  (or (compare<= \a c \z)
+      (compare<= \A c \Z)
+      (compare<= \0 c \9)
+      (compare= c \_)))
 
 (defn char-symbol-safe? [c]
   (or (char-alpha-numeric? c)
-      (char= c \-)
-      (char= c \+)
-      (char= c \*)
-      (char= c \%)
+      (compare= c \-)
+      (compare= c \+)
+      (compare= c \*)
+      (compare= c \%)
       ;; & isn't safe if by itself? ah it is
-      (char= c \&)
-      (char= c \?)
-      (char= c \!)))
+      (compare= c \&)
+      (compare= c \?)
+      (compare= c \!)))
 
 (defn alpha-numeric? [s]
   (every? char-alpha-numeric? s))
